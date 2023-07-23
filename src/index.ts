@@ -1,42 +1,148 @@
-import type { ExtensionContext } from 'vscode'
-import { commands, window } from 'vscode'
+import type { ExtensionContext, HoverProvider, TextEditor } from 'vscode'
+import * as vscode from 'vscode'
+import { getMatchImport, normalizedPath, scanMixin, transformMixins } from './utils'
+import type { FileStoreValue } from './utils/store'
+import { fileStore } from './utils/store'
 
-export function activate(cxt: ExtensionContext) {
-  const disposable = commands.registerTextEditorCommand('importToRequire', (textEdit, edit) => {
-    const document = textEdit.document
-    const selection = textEdit.selection
-    const text = document.getText(selection)
-    const newText = convert(text)
+let activeEditor: TextEditor | undefined
+let store: FileStoreValue
 
-    edit.replace(selection, newText)
-  })
-  window.showInformationMessage('Congratulations, your extension "import-to-require" is already finished!')
-  cxt.subscriptions.push(disposable)
+export function activate(context: ExtensionContext) {
+  activeEditor = vscode.window.activeTextEditor
+
+  context.subscriptions.push(
+    vscode.window.onDidChangeActiveTextEditor((editor) => {
+      activeEditor = editor!
+      if (activeEditor)
+        init()
+      //   updateProviders()
+    }, null, context.subscriptions),
+  )
+
+  // context.subscriptions.push(
+  //   workspace.onDidChangeTextDocument((event) => {
+  //     if (activeEditor && event.document === activeEditor.document)
+  //       updateProviders()
+  //   }, null, context.subscriptions),
+  // )
+
+  context.subscriptions.push(
+    vscode.languages.registerHoverProvider([
+      { scheme: 'file', language: 'javascript' },
+      { scheme: 'file', language: 'vue' },
+    ], new ImportHoverProvider()),
+  )
+
+  init()
 }
 
-function convert(text: string): string {
-  const requireRegex = /require\(['"](.+)['"]\)/
-  const requireRegex2 = /.*? (.+) = require\(['"](.+)['"]\)/
-  const importRegex = /import (.+) from ['"](.+)['"]/
-  const importRegex2 = /import\(['"](.+)['"]\)/
+function init() {
+  if (activeEditor) {
+    const document = activeEditor.document
+    const lineCount = document.lineCount
+    const fileUrl = document.uri.fsPath
+    let importStartIndex = 0
+    let importEndIndex = 0
 
-  const lines = text.split('\n')
-  const newLines = lines.map((line) => {
-    if (requireRegex2.test(line))
-      return line.replace(requireRegex2, 'import $1 from \'$2\'')
+    fileStore.addFileStore(fileUrl)
+    store = fileStore.getFileStore(fileUrl)!
 
-    else if (importRegex.test(line))
-      return line.replace(importRegex, 'const $1 = require(\'$2\')')
+    // 获取当前活跃编辑器import和mixins内容
+    for (let index = 0; index < lineCount; index++) {
+      const lineText = document.lineAt(index)
+      const text = lineText.text
+      if (!text)
+        continue
 
-    else if (requireRegex.test(line))
-      return line.replace(requireRegex, 'import(\'$1\')')
-    else if (importRegex2.test(line))
-      return line.replace(importRegex2, 'require(\'$1\')')
-    else
-      return line
-  })
+      const [_import, _importPath] = getMatchImport(text)
 
-  return newLines.join('\n')
+      if (_import && _importPath) {
+        importStartIndex = importStartIndex === 0 ? index : importStartIndex
+        store.importMap.set(_import, _importPath)
+        importEndIndex = index
+        continue
+      }
+
+      const mixinReg = /\s*mixins:\s*\[(.*?)\]\s*/
+
+      if (mixinReg.test(text)) {
+        const mixinsArr = text.match(mixinReg)?.[1].split(',')
+        mixinsArr?.forEach(item => store.mixinsSet.add(item))
+        continue
+      }
+    }
+
+    // 在导入路径中匹配mixins的内容
+    for (let index = importStartIndex; index < importEndIndex; index++) {
+      const lineText = document.lineAt(index)
+      const text = lineText.text
+      if (!text)
+        continue
+
+      const [_import, _importPath] = getMatchImport(text)
+      const mixinsArr = [...store.mixinsSet]
+      if (mixinsArr.some(item => _import.includes(item)))
+        store.mixinsPathsMap.set(_import, normalizedPath(_importPath, fileUrl))
+    }
+
+    // 解析当前页面的mixins路径
+    const mixinsValArr = [...store.mixinsPathsMap.values()]
+    for (const path of mixinsValArr) {
+      fileStore.addFileStore(path)
+
+      const store = fileStore.getFileStore(path)!
+      const mixinsFile = scanMixin(path)
+
+      store.mixinsValueMap.set(path, mixinsFile)
+    }
+  }
+}
+
+class ImportHoverProvider implements HoverProvider {
+  provideHover(document: vscode.TextDocument, position: vscode.Position): vscode.ProviderResult<vscode.Hover> {
+    const wordRange = document.getWordRangeAtPosition(position)
+
+    if (!wordRange)
+      return null
+
+    let mixinsObj: Record<string, any> = {}
+
+    // 获取mixins的key val值
+    for (const item of store.mixinsPathsMap.values()) {
+      const store = fileStore.getFileStore(item)
+      const mixinsVal = store?.mixinsValueMap.get(item)
+      mixinsObj = transformMixins(mixinsVal)
+    }
+
+    // 判断该行内是否能匹配到mixins值
+    for (const [key = '', value = []] of Object.entries(mixinsObj)) {
+      // const lineText = document.getText(document.lineAt(position).range).trim()
+      // const lineNumber = position.line
+
+      // const newPosition = new vscode.Position(lineNumber - 1, lineText.length)
+      // const wordRange = document.getWordRangeAtPosition(newPosition)
+      // const word = document.getText(wordRange)
+      const _key = key.replace('$', '')
+      const keyReg = new RegExp(_key)
+      const matchMixinsRange = document.getWordRangeAtPosition(position, keyReg)
+
+      if (!matchMixinsRange)
+        continue
+
+      const hover: vscode.Hover = {
+        range: matchMixinsRange,
+        // contents: [
+        //   { language: 'markdown', value: `value: "${value[0]}"` },
+        // ],
+        contents: [
+          `value: "${value[0]}"`,
+        ],
+      }
+      return hover
+    }
+
+    return null
+  }
 }
 
 export function deactivate() {

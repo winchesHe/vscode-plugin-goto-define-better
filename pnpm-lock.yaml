@@ -16,6 +16,12 @@ importers:
       '@types/vscode':
         specifier: ^1.69.0
         version: 1.69.0
+      acorn:
+        specifier: ^8.10.0
+        version: 8.10.0
+      acorn-walk:
+        specifier: ^8.2.0
+        version: 8.2.0
       eslint:
         specifier: ^8.21.0
         version: 8.21.0
@@ -467,6 +473,11 @@ packages:
       acorn: ^6.0.0 || ^7.0.0 || ^8.0.0
     dependencies:
       acorn: 8.10.0
+    dev: true
+
+  /acorn-walk@8.2.0:
+    resolution: {integrity: sha512-k+iyHEuPgSw6SbuDpGQM+06HQUa04DZ3o+F6CSzXMvvI5KMvnaEqXe+YVe555R9nn6GPt404fos4wcgpw12SDA==}
+    engines: {node: '>=0.4.0'}
     dev: true
 
   /acorn@8.10.0:

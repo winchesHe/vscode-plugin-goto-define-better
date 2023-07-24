@@ -1,4 +1,5 @@
 import path from 'path'
+import os from 'os'
 import { existsSync } from 'fs'
 import { getTsconfigPaths } from './parse'
 
@@ -8,7 +9,7 @@ export function normalizedPath(targetUrl: string, activePath = '') {
 
   if (targetUrl.startsWith('.') && activePath) {
     const basename = path.basename(activePath)
-    const convertPath = activePath.replace(`/${basename}`, '')
+    const convertPath = isWin ? activePath.replace(`\\${basename}`, '') : activePath.replace(`/${basename}`, '')
     const joinName = path.join(convertPath, targetUrl)
     return setExtPath(joinName)
   }

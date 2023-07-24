@@ -3,43 +3,63 @@ import { existsSync, readFileSync } from 'fs'
 import { simple } from 'acorn-walk'
 import { parse } from 'acorn'
 import { workspace } from 'vscode'
+import { mixinsConfig } from './getConfig'
 
-export function getTsconfigPaths(): Record<string, string> {
+
+export function getTsconfigPaths(activePath = ''): Record<string, any> {
   const rootList = workspace.workspaceFolders
   let pathVal = {}
+  let transformPath = activePath
 
   rootList?.forEach((root) => {
     const rootPath = root.uri.fsPath
-    const tsPath = path.join(rootPath, 'tsconfig.json')
+    transformPath = activePath?.replace(/(packages[\\/]\w+[\\/]).*/, '$1')!
 
-    if (existsSync(tsPath)) {
-      const context = readFileSync(tsPath, 'utf8')
-      const ast = parse(`const a = ${context}`, { ecmaVersion: 2016 })
+    const tsPath = [
+      path.join(transformPath, 'tsconfig.json'),
+      path.join(rootPath, 'tsconfig.json'),
+    ]
 
-      simple(ast, {
-        Property(node: any) {
-          if (node.key.type === 'Literal' && node.key.value === 'paths') {
-            if (node.value.type === 'ObjectExpression') {
-              pathVal = {
-                ...extractPathsValue(node.value),
-                ...pathVal,
+    for (const path of tsPath) {
+      if (existsSync(path)) {
+        const context = readFileSync(path, 'utf8')
+        const ast = parse(`const a = ${context}`, { ecmaVersion: 2016 })
+
+        simple(ast, {
+          Property(node: any) {
+            if (node.key?.type === 'Literal' && node.key.value === 'paths') {
+              if (node.value.type === 'ObjectExpression') {
+                pathVal = {
+                  ...extractPathsValue(node.value),
+                  ...pathVal,
+                }
               }
             }
-          }
-        },
-      })
+          },
+        })
+      }
     }
   })
 
-  return pathVal
+  if (mixinsConfig.alias) {
+    pathVal = {
+      ...pathVal,
+      ...mixinsConfig.alias
+    }
+  }
+
+  return {
+    pathVal,
+    transformPath
+  }
 }
 
 export function scanMixin(url: string) {
   if (existsSync(url)) {
-    const fileContent = readFileSync(url, 'utf8')
-    // const scriptRegex = /<script(?:\s[^>]*)*>([\s\S]*?)<\/script\s*>/gi
-    // if (scriptRegex.test(fileContent))
-    //   fileContent = fileContent.match(scriptRegex)?.[1] || fileContent
+    let fileContent = readFileSync(url, 'utf8');
+    const scriptRegex = /<script(?:\s[^>]*)*>([\s\S]*?)<\/script\s*>/gi;
+
+    fileContent = scriptRegex.exec(fileContent)?.[1] || fileContent
 
     return getMixinData(fileContent)
   }
@@ -68,8 +88,8 @@ function getMixinData(code: string) {
     ObjectExpression(node: any) {
       node.properties.forEach((property) => {
         if (
-          property.key.type === 'Identifier'
-        && targetProperties.includes(property.key.name)
+          property.key?.type === 'Identifier'
+          && targetProperties.includes(property.key.name)
         ) {
           const value = evaluatePropertyValue(property.value, property.key.name)
           properties[property.key.name] = value
@@ -81,7 +101,7 @@ function getMixinData(code: string) {
     if (node.type === 'ObjectExpression') {
       const value = {}
       node.properties.forEach((property) => {
-        if (property.key.type === 'Identifier')
+        if (property.key?.type === 'Identifier')
           value[property.key.name] = [evaluatePropertyValue(property.value), property.key.start]
       })
       return value

@@ -1,4 +1,6 @@
 export * from './store'
+export * from './paths'
+export * from './parse'
 export * from './normalizedPath'
 export * from './importMatch'
-export * from './parse'
+export * from './getConfig'

@@ -1,15 +1,14 @@
 {
   "publisher": "winches",
-  "name": "ImportToRequire",
-  "displayName": "ImportToRequire",
+  "name": "mixins-helper",
+  "displayName": "mixins-helper",
   "version": "1.0.0",
   "private": true,
-  "description": "exchange selected words",
+  "description": "enhance vue2 mixins develop experience",
   "author": "winches",
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/winchesHe/plugin-vscode-import-to-require.git"
   },
   "categories": [
     "Other"
@@ -27,29 +26,30 @@
     "onLanguage:vue"
   ],
   "contributes": {
-    "commands": [
-      {
-        "command": "importToRequire",
-        "title": "自动转换import 和 require"
-      }
-    ],
-    "keybindings": [
-      {
-        "command": "importToRequire",
-        "key": "ctrl+alt+R",
-        "mac": "cmd+shift+R",
-        "when": "editorTextFocus"
-      }
-    ],
-    "menus": {
-      "editor/context": [
-        {
-          "when": "editorFocus",
-          "command": "importToRequire",
-          "group": "navigation"
+    "configuration": {
+      "type": "object",
+      "title": "mixins 跳转配置",
+      "properties": {
+        "mixins-helper.activeHeight": {
+          "type": "boolean",
+          "default": false,
+          "description": "高亮 mixins 内容"
+        },
+        "mixins-helper.activeReload": {
+          "type": "boolean",
+          "default": false,
+          "description": "热更新该文件引入 mixins 内容（会消耗性能）"
+        },
+        "mixins-helper.hoverTips": {
+          "type": "boolean",
+          "default": true,
+          "description": "鼠标 Hover 时出现该 mixins 内容提示"
+        },
+        "mixins-helper.alias": {
+          "type": "object",
+          "description": "路径别名映射"
         }
-      ]
-    }
+      }
   },
   "scripts": {
     "build": "tsup src/index.ts --external vscode",

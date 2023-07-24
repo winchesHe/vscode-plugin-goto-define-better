@@ -80,7 +80,7 @@ function init() {
         continue
 
       const [_import, _importPath] = getMatchImport(text)
-      const mixinsArr = [...store.mixinsSet]
+      const mixinsArr = [...store.mixinsSet].map(item => item.trim())
       if (mixinsArr.some(item => _import.includes(item)))
         store.mixinsPathsMap.set(_import, normalizedPath(_importPath, fileUrl))
     }

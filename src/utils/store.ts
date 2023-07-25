@@ -1,3 +1,5 @@
+import { transformMixins } from './parse'
+
 export interface FileStoreValue {
   importMap: Map<string, any>
   mixinsSet: Set<string>
@@ -33,6 +35,22 @@ class StoreClass {
   public clear() {
     this.fileStore.clear()
   }
+}
+
+export function convertMixinsObjVal(store: FileStoreValue) {
+  let mixinsObj: Record<string, any> = {}
+
+  // 获取mixins的key val值
+  for (const item of store.mixinsPathsMap.values()) {
+    const store = fileStore.getFileStore(item)
+    const mixinsVal = store?.mixinsValueMap.get(item)
+    mixinsObj = {
+      ...mixinsObj,
+      ...transformMixins(mixinsVal)
+    }
+  }
+
+  return mixinsObj
 }
 
 export const fileStore = new StoreClass()

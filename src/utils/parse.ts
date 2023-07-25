@@ -80,6 +80,10 @@ export function transformMixins(obj: Record<string, any> = {}) {
   return result
 }
 
+export function transformRegKey(str: string) {
+  return str.replace('$', '\\$')
+}
+
 function getMixinData(code: string) {
   const ast = parse(code, { sourceType: 'module', ecmaVersion: 'latest' })
   const targetProperties = ['data', 'computed', 'methods']

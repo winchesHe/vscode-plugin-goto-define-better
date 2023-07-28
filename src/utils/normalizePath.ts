@@ -5,7 +5,7 @@ import { getTsconfigPaths } from './parse'
 
 const isWin = os.platform() === 'win32'
 
-export function normalizedPath(targetUrl: string, activePath = '') {
+export function normalizePath(targetUrl: string, activePath = '') {
   if (!targetUrl)
     return ''
 

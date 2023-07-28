@@ -1,6 +1,6 @@
 import type { ExtensionContext, HoverProvider, TextEditor } from 'vscode'
 import * as vscode from 'vscode'
-import { getMatchImport, getMatchMixins, normalizedPath, scanMixin, transformMixins, transformRegKey, vueConfig } from './utils'
+import { getMatchImport, getMatchMixins, normalizePath, scanMixin, transformMixins, transformRegKey, vueConfig } from './utils'
 import type { FileStoreValue } from './utils/store'
 import { convertMixinsObjVal, fileStore } from './utils/store'
 
@@ -116,7 +116,7 @@ function initFileStore() {
       // 在导入路径中匹配mixins的内容
       const mixinsArr = [...store.mixinsSet].map(item => item.trim())
       if (mixinsArr.some(item => _import.includes(item))) {
-        const _normalizedPath = normalizedPath(_importPath, fileUrl)
+        const _normalizedPath = normalizePath(_importPath, fileUrl)
 
         if (!_normalizedPath.endsWith('.ts'))
           store.mixinsPathsMap.set(_import, _normalizedPath)

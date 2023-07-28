@@ -3,7 +3,7 @@ import { existsSync, readFileSync } from 'fs'
 import { simple } from 'acorn-walk'
 import { parse } from 'acorn'
 import { workspace } from 'vscode'
-import { mixinsConfig } from './getConfig'
+import { vueConfig } from './getConfig'
 
 
 export function getTsconfigPaths(activePath = ''): Record<string, any> {
@@ -41,10 +41,10 @@ export function getTsconfigPaths(activePath = ''): Record<string, any> {
     }
   })
 
-  if (mixinsConfig.alias) {
+  if (vueConfig.alias) {
     pathVal = {
       ...pathVal,
-      ...mixinsConfig.alias
+      ...vueConfig.alias
     }
   }
 

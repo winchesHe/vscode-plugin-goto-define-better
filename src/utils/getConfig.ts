@@ -25,4 +25,4 @@ export class Config {
   }
 }
 
-export const mixinsConfig = new Config()
+export const vueConfig = new Config()

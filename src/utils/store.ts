@@ -1,30 +1,38 @@
 import { transformMixins } from './parse'
 
 export interface FileStoreValue {
+  /** 导入路径值[import, importPath] */
   importMap: Map<string, any>
+  /** mixins的Key值数组 */
   mixinsSet: Set<string>
+  /** mixins的路径值[mixinsImport, importPath] */
   mixinsPathsMap: Map<string, any>
+  /** mixins的值[path, value] */
   mixinsValueMap: Map<string, any>
 }
 
 class StoreClass {
   private fileStore = new Map<string, FileStoreValue>()
 
-  public addFileStore(fileUrl: string) {
+  public initFileStore(fileUrl: string) {
     const importMap = new Map()
     const mixinsSet = new Set<string>()
     const mixinsPathsMap = new Map()
     const mixinsValueMap = new Map()
 
+    this.fileStore.set(fileUrl, {
+      importMap,
+      mixinsSet,
+      mixinsPathsMap,
+      mixinsValueMap,
+    })
+  }
+
+  public addFileStore(fileUrl: string) {
     const file = this.fileStore.get(fileUrl)
 
     if (!file) {
-      this.fileStore.set(fileUrl, {
-        importMap,
-        mixinsSet,
-        mixinsPathsMap,
-        mixinsValueMap,
-      })
+      this.initFileStore(fileUrl)
     }
   }
 

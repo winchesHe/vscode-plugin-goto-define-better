@@ -1,11 +1,13 @@
 import type { ExtensionContext, HoverProvider, TextEditor } from 'vscode'
 import * as vscode from 'vscode'
-import { mixinsConfig, getMatchImport, normalizedPath, scanMixin, transformMixins, getMatchMixins, transformRegKey } from './utils'
+import { vueConfig, getMatchImport, normalizedPath, scanMixin, transformMixins, getMatchMixins, transformRegKey } from './utils'
 import type { FileStoreValue } from './utils/store'
 import { convertMixinsObjVal, fileStore } from './utils/store'
 
 let activeEditor: TextEditor | undefined
 let store: FileStoreValue
+let changeTextDisposables: vscode.Disposable | false
+let hoverDisposables: vscode.Disposable | false
 const decorationType = vscode.window.createTextEditorDecorationType({
   color: '#5074b3',
   textDecoration: 'underline wavy',
@@ -21,28 +23,15 @@ export function activate(context: ExtensionContext) {
       activeEditor = editor!
       if (activeEditor) {
         updateFileStore()
-        mixinsConfig.activeHeight && initColor()
+        vueConfig.activeHeight && initColor()
       }
     }, null, context.subscriptions),
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('mixins-helper')) {
-        mixinsConfig.update()
-        // init()
+        vueConfig.update()
+        updateProvider()
       }
     })
-  )
-
-  mixinsConfig.activeReload && context.subscriptions.push(
-    vscode.workspace.onDidChangeTextDocument((event) => {
-      if (activeEditor && event.document === activeEditor.document) {
-        init()
-      }
-    }, null, context.subscriptions),
-  )
-  mixinsConfig.hoverTips && context.subscriptions.push(
-    vscode.languages.registerHoverProvider([
-      { scheme: 'file', language: 'vue' },
-    ], new ImportHoverProvider()),
   )
 
   context.subscriptions.push(
@@ -55,11 +44,49 @@ export function activate(context: ExtensionContext) {
   )
 
   init()
+  updateProvider()
+
+  function updateProvider() {
+    if (vueConfig.activeReload) {
+      removeProvider('changeTextDisposables')
+      changeTextDisposables = vscode.workspace.onDidChangeTextDocument((event) => {
+        if (activeEditor && event.document === activeEditor.document) {
+          init()
+        }
+      }, null, context.subscriptions)
+    } else {
+      removeProvider('changeTextDisposables')
+    }
+
+    if (vueConfig.hoverTips) {
+      removeProvider('hoverDisposables')
+      hoverDisposables = vscode.languages.registerHoverProvider([
+        { scheme: 'file', language: 'vue' },
+      ], new ImportHoverProvider())
+    } else {
+      removeProvider('hoverDisposables')
+    }
+
+    function removeProvider(type: 'changeTextDisposables' | 'hoverDisposables') {
+      switch (type) {
+        case 'changeTextDisposables':
+          changeTextDisposables && changeTextDisposables.dispose()
+          changeTextDisposables = false
+          break;
+        case "hoverDisposables":
+          hoverDisposables && hoverDisposables.dispose()
+          hoverDisposables = false
+          break;
+        default:
+          break;
+      }
+    }
+  }
 }
 
 function init() {
   initFileStore()
-  mixinsConfig.activeHeight && initColor()
+  vueConfig.activeHeight && initColor()
 }
 
 function initFileStore() {
@@ -72,7 +99,7 @@ function initFileStore() {
 
     const fileUrl = document.uri.fsPath
 
-    fileStore.addFileStore(fileUrl)
+    fileStore.initFileStore(fileUrl)
     store = fileStore.getFileStore(fileUrl)!
 
     // 获取当前活跃编辑器import和mixins内容
@@ -123,7 +150,7 @@ function updateFileStore() {
       const fileUrl = document.uri.fsPath
       const store = fileStore.getFileStore(fileUrl)
 
-      if (!store) {
+      if (!store || vueConfig.activeReload) {
         initFileStore()
       }
     }

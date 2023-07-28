@@ -249,7 +249,7 @@ class ImportHoverProvider implements HoverProvider {
         continue
 
       const markdown = new vscode.MarkdownString()
-      const text = /\n/.test(value[0]) ? `function ${key}(...args?: any) {${value[0]}}` : `value: ${value[0]}`
+      const text = /\n/.test(value[0]) ? `function ${key}${value[0]}` : `value: ${value[0]}`
       const hover: vscode.Hover = {
         range: matchMixinsRange,
         // contents: [

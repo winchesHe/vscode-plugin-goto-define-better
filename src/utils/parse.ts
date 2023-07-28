@@ -115,7 +115,7 @@ function getMixinData(code: string) {
         if (property)
           return evaluatePropertyValue(property)
       }
-      return code.substring(node.body.start + 1, node.body.end - 1)
+      return code.substring(node.start, node.end)
     }
     else if (node.type === 'ArrayExpression') {
       return code.substring(node.start, node.end)

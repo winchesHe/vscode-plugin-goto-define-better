@@ -31,9 +31,8 @@ class StoreClass {
   public addFileStore(fileUrl: string) {
     const file = this.fileStore.get(fileUrl)
 
-    if (!file) {
+    if (!file)
       this.initFileStore(fileUrl)
-    }
   }
 
   public getFileStore(fileUrl: string) {
@@ -45,6 +44,8 @@ class StoreClass {
   }
 }
 
+export const fileStore = new StoreClass()
+
 export function convertMixinsObjVal(store: FileStoreValue) {
   let mixinsObj: Record<string, any> = {}
 
@@ -54,11 +55,9 @@ export function convertMixinsObjVal(store: FileStoreValue) {
     const mixinsVal = store?.mixinsValueMap.get(item)
     mixinsObj = {
       ...mixinsObj,
-      ...transformMixins(mixinsVal)
+      ...transformMixins(mixinsVal),
     }
   }
 
   return mixinsObj
 }
-
-export const fileStore = new StoreClass()

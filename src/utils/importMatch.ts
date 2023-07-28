@@ -16,9 +16,9 @@ export function getMatchImport(str: string, line = false) {
     return [match[1].trim() ?? '', match[2] ?? '']
   }
 
-  for (const item of matchAll) {
+  for (const item of matchAll)
     result.push(matchImport(item))
-  }
+
   // const importRegex2 = /import\(['"](.+)['"]\)/
 
   // if (requireRegex.test(str))
@@ -38,9 +38,8 @@ export function getMatchImport(str: string, line = false) {
 export function getMatchMixins(str: string) {
   const mixinReg = /\s*mixins:\s*\[([\w\W]*?)\]\s*/
 
-  if (mixinReg.test(str)) {
+  if (mixinReg.test(str))
     return str.match(mixinReg)?.[1].split(',').map(i => i.trim()) ?? []
-  }
 
   return []
 }

@@ -1,10 +1,10 @@
-import { workspace } from 'vscode';
+import { workspace } from 'vscode'
 
 export class Config {
-  public activeReload: boolean = false;
-  public activeHeight: boolean= false;
-  public hoverTips: boolean= true;
-  public alias: object = {};
+  public activeReload = false
+  public activeHeight = false
+  public hoverTips = true
+  public alias: object = {}
 
   constructor() {
     this.update()

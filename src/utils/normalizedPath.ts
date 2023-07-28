@@ -32,12 +32,11 @@ export function normalizedPath(targetUrl: string, activePath = '') {
   const transformUrl = setExtPath(path.join(transformPath, _targetUrl))
   const rootTransformUrl = setExtPath(path.join(convertPath, _targetUrl))
 
-  if (existsSync(transformUrl)) {
+  if (existsSync(transformUrl))
     return transformUrl
-  }
-  if (existsSync(rootTransformUrl)) {
+
+  if (existsSync(rootTransformUrl))
     return rootTransformUrl
-  }
 
   return targetUrl
 }

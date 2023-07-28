@@ -1,6 +1,6 @@
 import type { ExtensionContext, HoverProvider, TextEditor } from 'vscode'
 import * as vscode from 'vscode'
-import { vueConfig, getMatchImport, normalizedPath, scanMixin, transformMixins, getMatchMixins, transformRegKey } from './utils'
+import { getMatchImport, getMatchMixins, normalizedPath, scanMixin, transformMixins, transformRegKey, vueConfig } from './utils'
 import type { FileStoreValue } from './utils/store'
 import { convertMixinsObjVal, fileStore } from './utils/store'
 
@@ -13,7 +13,7 @@ const decorationType = vscode.window.createTextEditorDecorationType({
   textDecoration: 'underline wavy',
 })
 const runLanguage = ['vue']
-const notWordReg = /[:-\w/\\\u4e00-\u9fa5\s']/
+const notWordReg = /[:-\w/\\\u4E00-\u9FA5\s']/
 
 export function activate(context: ExtensionContext) {
   activeEditor = vscode.window.activeTextEditor
@@ -31,7 +31,7 @@ export function activate(context: ExtensionContext) {
         vueConfig.update()
         updateProvider()
       }
-    })
+    }),
   )
 
   context.subscriptions.push(
@@ -50,11 +50,11 @@ export function activate(context: ExtensionContext) {
     if (vueConfig.activeReload) {
       removeProvider('changeTextDisposables')
       changeTextDisposables = vscode.workspace.onDidChangeTextDocument((event) => {
-        if (activeEditor && event.document === activeEditor.document) {
+        if (activeEditor && event.document === activeEditor.document)
           init()
-        }
       }, null, context.subscriptions)
-    } else {
+    }
+    else {
       removeProvider('changeTextDisposables')
     }
 
@@ -63,7 +63,8 @@ export function activate(context: ExtensionContext) {
       hoverDisposables = vscode.languages.registerHoverProvider([
         { scheme: 'file', language: 'vue' },
       ], new ImportHoverProvider())
-    } else {
+    }
+    else {
       removeProvider('hoverDisposables')
     }
 
@@ -72,13 +73,13 @@ export function activate(context: ExtensionContext) {
         case 'changeTextDisposables':
           changeTextDisposables && changeTextDisposables.dispose()
           changeTextDisposables = false
-          break;
-        case "hoverDisposables":
+          break
+        case 'hoverDisposables':
           hoverDisposables && hoverDisposables.dispose()
           hoverDisposables = false
-          break;
+          break
         default:
-          break;
+          break
       }
     }
   }
@@ -93,9 +94,8 @@ function initFileStore() {
   if (activeEditor) {
     const document = activeEditor.document
 
-    if (!runLanguage.includes(document.languageId)) {
+    if (!runLanguage.includes(document.languageId))
       return
-    }
 
     const fileUrl = document.uri.fsPath
 
@@ -108,7 +108,7 @@ function initFileStore() {
     const matchMixins = getMatchMixins(documentText)
 
     matchMixins?.forEach(item => store.mixinsSet.add(item))
-    matchImportArr.forEach(item => {
+    matchImportArr.forEach((item) => {
       const [_import, _importPath] = item
       // 存储import内容
       store.importMap.set(_import, _importPath)
@@ -118,9 +118,8 @@ function initFileStore() {
       if (mixinsArr.some(item => _import.includes(item))) {
         const _normalizedPath = normalizedPath(_importPath, fileUrl)
 
-        if (!_normalizedPath.endsWith('.ts')) {
+        if (!_normalizedPath.endsWith('.ts'))
           store.mixinsPathsMap.set(_import, _normalizedPath)
-        }
       }
     })
 
@@ -134,9 +133,11 @@ function initFileStore() {
         const mixinsFile = scanMixin(path)
 
         store.mixinsValueMap.set(path, mixinsFile)
-      } catch (error) {
+      }
+      catch (error) {
         // mixins解析错误，已知不支持：ts，带ts的vue
-        console.log(error);
+        // eslint-disable-next-line no-console
+        console.log(error)
       }
     }
   }
@@ -150,9 +151,8 @@ function updateFileStore() {
       const fileUrl = document.uri.fsPath
       const store = fileStore.getFileStore(fileUrl)
 
-      if (!store || vueConfig.activeReload) {
+      if (!store || vueConfig.activeReload)
         initFileStore()
-      }
     }
   }
 }
@@ -168,11 +168,12 @@ function initColor() {
 
       // 判断该行内是否能匹配到mixins值
       const decorations: vscode.DecorationOptions[] = []
-      for (const [key = '', value = []] of Object.entries(mixinsObj)) {
+      for (const [key = ''] of Object.entries(mixinsObj)) {
         const text = editor.document.getText()
         const _key = transformRegKey(key)
         const regex = new RegExp(_key, 'g')
         let match
+        // eslint-disable-next-line no-cond-assign
         while ((match = regex.exec(text))) {
           const startPos = editor.document.positionAt(match.index)
           const endPos = editor.document.positionAt(match.index + match[0].length)
@@ -180,10 +181,8 @@ function initColor() {
           const firstRange = new vscode.Range(document.positionAt(match.index - 1), startPos)
           const endRange = new vscode.Range(endPos, document.positionAt(match.index + match[0].length + 1))
 
-          if (canMatchWord({ firstRange, endRange })) {
+          if (canMatchWord({ firstRange, endRange }))
             decorations.push(decoration)
-          }
-
         }
       }
       editor.setDecorations(decorationType, decorations)
@@ -192,7 +191,7 @@ function initColor() {
 }
 
 function canMatchWord(
-  { firstRange, endRange, position }: { firstRange?: vscode.Range, endRange?: vscode.Range, position?: vscode.Position }
+  { firstRange, endRange, position }: { firstRange?: vscode.Range; endRange?: vscode.Range; position?: vscode.Position },
 ) {
   if (activeEditor) {
     const document = activeEditor.document
@@ -249,18 +248,18 @@ class ImportHoverProvider implements HoverProvider {
       if (!matchMixinsRange)
         continue
 
-        const markdown = new vscode.MarkdownString();
-        const text = /\n/.test(value[0]) ? `function ${key}(...args?: any) {${value[0]}}` : `value: ${value[0]}`;
-        const hover: vscode.Hover = {
-          range: matchMixinsRange,
-          // contents: [
-          //   { language: 'markdown', value: `value: "${value[0]}"` },
-          // ],
-          contents: [
-            markdown.appendCodeblock(text, 'typescript'),
-          ],
-        }
-        return hover
+      const markdown = new vscode.MarkdownString()
+      const text = /\n/.test(value[0]) ? `function ${key}(...args?: any) {${value[0]}}` : `value: ${value[0]}`
+      const hover: vscode.Hover = {
+        range: matchMixinsRange,
+        // contents: [
+        //   { language: 'markdown', value: `value: "${value[0]}"` },
+        // ],
+        contents: [
+          markdown.appendCodeblock(text, 'typescript'),
+        ],
+      }
+      return hover
     }
 
     return null
@@ -274,7 +273,7 @@ class ImportDefinitionProvider implements vscode.DefinitionProvider {
     if (!wordRange || !canMatchWord({ position }))
       return null
 
-    let mixinsObj: Record<string, any> = {}
+    const mixinsObj: Record<string, any> = {}
 
     // 获取mixins的file的key val值
     for (const item of store.mixinsPathsMap.values()) {
@@ -308,9 +307,9 @@ class ImportDefinitionProvider implements vscode.DefinitionProvider {
 }
 
 class ImportCompletionItems implements vscode.CompletionItemProvider {
-  provideCompletionItems(document: vscode.TextDocument): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
-    let mixinsProperty: Record<string, any> = {}
-    let mixinsMethods: Record<string, any> = {}
+  provideCompletionItems(): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
+    const mixinsProperty: Record<string, any> = {}
+    const mixinsMethods: Record<string, any> = {}
 
     // 获取mixins的key val值
     for (const item of store.mixinsPathsMap.values()) {
@@ -318,35 +317,40 @@ class ImportCompletionItems implements vscode.CompletionItemProvider {
       const mixinsVal = store?.mixinsValueMap.get(item)
       for (const key in mixinsVal) {
         if (['data', 'computed'].includes(key)) {
-          mixinsProperty[key] = mixinsProperty[key] ? {
-            ...mixinsProperty[key],
-            ...mixinsVal[key]
-          } : mixinsVal[key]
-        } else {
-          mixinsMethods[key] = mixinsMethods[key] ? {
-            ...mixinsMethods[key],
-            ...mixinsVal[key]
-          } : mixinsVal[key]
+          mixinsProperty[key] = mixinsProperty[key]
+            ? {
+                ...mixinsProperty[key],
+                ...mixinsVal[key],
+              }
+            : mixinsVal[key]
+        }
+        else {
+          mixinsMethods[key] = mixinsMethods[key]
+            ? {
+                ...mixinsMethods[key],
+                ...mixinsVal[key],
+              }
+            : mixinsVal[key]
         }
       }
     }
 
     const parsedProperty: Record<string, any> = [
       ...(Object.keys(mixinsProperty.data ?? {}) ?? []),
-      ...(Object.keys(mixinsProperty.computed ?? {}) ?? [])
+      ...(Object.keys(mixinsProperty.computed ?? {}) ?? []),
     ]
     const parsedMethods: Record<string, any> = [
-      ...(Object.keys(mixinsMethods.methods ?? {}) ?? [])
+      ...(Object.keys(mixinsMethods.methods ?? {}) ?? []),
     ]
 
     return [
-      ...parsedProperty.map(item => {
+      ...parsedProperty.map((item) => {
         return new vscode.CompletionItem(item, vscode.CompletionItemKind.Property)
       }),
-      ...parsedMethods.map(item => {
+      ...parsedMethods.map((item) => {
         return new vscode.CompletionItem(item, vscode.CompletionItemKind.Method)
       }),
-    ];
+    ]
   }
 }
 

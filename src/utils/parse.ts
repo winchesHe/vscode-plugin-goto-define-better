@@ -5,7 +5,6 @@ import { parse } from 'acorn'
 import { workspace } from 'vscode'
 import { vueConfig } from './getConfig'
 
-
 export function getTsconfigPaths(activePath = ''): Record<string, any> {
   const rootList = workspace.workspaceFolders
   let pathVal = {}
@@ -13,7 +12,7 @@ export function getTsconfigPaths(activePath = ''): Record<string, any> {
 
   rootList?.forEach((root) => {
     const rootPath = root.uri.fsPath
-    transformPath = activePath?.replace(/(packages[\\/]\w+[\\/]).*/, '$1')!
+    transformPath = activePath?.replace(/(packages[\\/]\w+[\\/]).*/, '$1')
 
     const tsPath = [
       path.join(transformPath, 'tsconfig.json'),
@@ -44,20 +43,20 @@ export function getTsconfigPaths(activePath = ''): Record<string, any> {
   if (vueConfig.alias) {
     pathVal = {
       ...pathVal,
-      ...vueConfig.alias
+      ...vueConfig.alias,
     }
   }
 
   return {
     pathVal,
-    transformPath
+    transformPath,
   }
 }
 
 export function scanMixin(url: string) {
   if (existsSync(url)) {
-    let fileContent = readFileSync(url, 'utf8');
-    const scriptRegex = /<script(?:\s[^>]*)*>([\s\S]*?)<\/script\s*>/gi;
+    let fileContent = readFileSync(url, 'utf8')
+    const scriptRegex = /<script(?:\s[^>]*)*>([\s\S]*?)<\/script\s*>/gi
 
     fileContent = scriptRegex.exec(fileContent)?.[1] || fileContent
 

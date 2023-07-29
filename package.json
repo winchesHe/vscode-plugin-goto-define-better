@@ -37,7 +37,7 @@
         "mixins-helper.activeReload": {
           "type": "boolean",
           "default": false,
-          "description": "热更新该文件引入 mixins 内容（会消耗性能）"
+          "description": "热更新该文件引入 mixins 内容"
         },
         "mixins-helper.hoverTips": {
           "type": "boolean",

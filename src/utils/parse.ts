@@ -3,7 +3,12 @@ import { existsSync, readFileSync } from 'fs'
 import { simple } from 'acorn-walk'
 import { parse } from 'acorn'
 import { workspace } from 'vscode'
+import { storeMixins } from '../mixins'
 import { vueConfig } from './getConfig'
+import type { MixinsValue } from './store'
+import { fileStore } from './store'
+
+export const targetProperties = ['data', 'computed', 'methods']
 
 export function getTsconfigPaths(activePath = ''): Record<string, any> {
   const rootList = workspace.workspaceFolders
@@ -53,39 +58,55 @@ export function getTsconfigPaths(activePath = ''): Record<string, any> {
   }
 }
 
-export function scanMixin(url: string) {
+export function scanMixin(url: string): Record<string, MixinsValue> {
   if (existsSync(url)) {
-    let fileContent = readFileSync(url, 'utf8')
-    const scriptRegex = /<script(?:\s[^>]*)*>([\s\S]*?)<\/script\s*>/gi
+    if (vueConfig.activeReload)
+      fileStore.initFileStore(url)
 
-    fileContent = scriptRegex.exec(fileContent)?.[1] || fileContent
+    let result = {}
+    const store = fileStore.getFileStore(url, true)
+    const fileContent = extractScriptText(readFileSync(url, 'utf8'))
 
-    return getMixinData(fileContent)
+    if (fileStore.isEmpty(store, 'mixinsPathsMap'))
+      storeMixins(store, fileContent, url)
+
+    // 解析当前页面的mixins路径
+    const mixinsValArr = [...store.mixinsPathsMap.values()]
+    for (const path of mixinsValArr) {
+      const mixinsFile = scanMixin(path)
+
+      store.mixinsValueMap.set(path, mixinsFile)
+      result = mixinsFile
+    }
+
+    try {
+      targetProperties.forEach((item) => {
+        result[url] = {}
+        result[url][item] = {
+          ...(result[url][item] || {}),
+          ...(getMixinData(fileContent)[item] || {}),
+        }
+      })
+      return result as Record<string, MixinsValue>
+    }
+    catch (error) {
+      // mixins解析错误，已知不支持：ts，带ts的vue
+      // eslint-disable-next-line no-console
+      console.log(error)
+      return {} as Record<string, MixinsValue>
+    }
   }
 
-  return ''
+  return {} as Record<string, MixinsValue>
 }
 
-// 将data: { key: value }等转换成{ key: value }
-export function transformMixins(obj: Record<string, any> = {}) {
-  const result = {}
-
-  Object.values(obj)?.forEach((item = {}, index, arr) => {
-    Object.keys(item)?.forEach((key) => {
-      result[key] = arr[index][key]
-    })
-  })
-
-  return result
-}
-
-export function transformRegKey(str: string) {
-  return str.replace('$', '\\$')
+function extractScriptText(ctx: string) {
+  const scriptRegex = /<script(?:\s[^>]*)*>([\s\S]*?)<\/script\s*>/gi
+  return scriptRegex.exec(ctx)?.[1] || ctx
 }
 
 function getMixinData(code: string) {
   const ast = parse(code, { sourceType: 'module', ecmaVersion: 'latest' })
-  const targetProperties = ['data', 'computed', 'methods']
   const properties = {}
   simple(ast, {
     ObjectExpression(node: any) {

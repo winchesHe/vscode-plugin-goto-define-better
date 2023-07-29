@@ -4,7 +4,7 @@
 
 ## TODO
 
-- [ ] Mixins嵌套解析
+- [x] Mixins嵌套解析
 
 - [ ] Ts 支持
 

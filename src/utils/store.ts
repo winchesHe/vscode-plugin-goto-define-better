@@ -1,4 +1,10 @@
-import { transformMixins } from './parse'
+type Data = Record<string, [string, number]>
+
+export interface MixinsValue {
+  data: Data
+  computer: Data
+  methods: Data
+}
 
 export interface FileStoreValue {
   /** 导入路径值[import, importPath] */
@@ -7,8 +13,8 @@ export interface FileStoreValue {
   mixinsSet: Set<string>
   /** mixins的路径值[mixinsImport, importPath] */
   mixinsPathsMap: Map<string, any>
-  /** mixins的值[path, value] */
-  mixinsValueMap: Map<string, any>
+  /** mixins的值{ path: { mixinsPath: MixinsValue } } */
+  mixinsValueMap: Map<string, Record<string, MixinsValue>>
 }
 
 class StoreClass {
@@ -35,29 +41,25 @@ class StoreClass {
       this.initFileStore(fileUrl)
   }
 
-  public getFileStore(fileUrl: string) {
-    return this.fileStore.get(fileUrl)
+  public getFileStore<T extends boolean>(fileUrl: string, addStore?: T): T extends true ? FileStoreValue : FileStoreValue | undefined {
+    if (addStore) {
+      this.addFileStore(fileUrl)
+      return this.fileStore.get(fileUrl)!
+    }
+    return this.fileStore.get(fileUrl) as T extends true ? FileStoreValue : FileStoreValue | undefined
   }
 
   public clear() {
     this.fileStore.clear()
   }
+
+  public isEmpty(store: FileStoreValue, storeKey?: keyof FileStoreValue) {
+    if (storeKey)
+      return !store[storeKey].size
+
+    return !Object.values(store).some(item => item.size)
+  }
 }
 
 export const fileStore = new StoreClass()
 
-export function convertMixinsObjVal(store: FileStoreValue) {
-  let mixinsObj: Record<string, any> = {}
-
-  // 获取mixins的key val值
-  for (const item of store.mixinsPathsMap.values()) {
-    const store = fileStore.getFileStore(item)
-    const mixinsVal = store?.mixinsValueMap.get(item)
-    mixinsObj = {
-      ...mixinsObj,
-      ...transformMixins(mixinsVal),
-    }
-  }
-
-  return mixinsObj
-}

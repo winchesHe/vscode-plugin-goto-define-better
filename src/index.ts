@@ -1,8 +1,9 @@
 import type { ExtensionContext, HoverProvider, TextEditor } from 'vscode'
 import * as vscode from 'vscode'
-import { getMatchImport, getMatchMixins, normalizePath, scanMixin, transformMixins, transformRegKey, vueConfig } from './utils'
+import { getMatchImport, getMatchMixins, normalizePath, scanMixin, transformRegKey, vueConfig } from './utils'
 import type { FileStoreValue } from './utils/store'
-import { convertMixinsObjVal, fileStore } from './utils/store'
+import { fileStore } from './utils/store'
+import { convertMixinsObjVal, transformMixins, transformMixinsValuesPath } from './mixins'
 
 let activeEditor: TextEditor | undefined
 let store: FileStoreValue
@@ -47,16 +48,17 @@ export function activate(context: ExtensionContext) {
   updateProvider()
 
   function updateProvider() {
-    if (vueConfig.activeReload) {
-      removeProvider('changeTextDisposables')
-      changeTextDisposables = vscode.workspace.onDidChangeTextDocument((event) => {
-        if (activeEditor && event.document === activeEditor.document)
-          init()
-      }, null, context.subscriptions)
-    }
-    else {
-      removeProvider('changeTextDisposables')
-    }
+    // 暂时取消activeTextChange事件
+    // if (vueConfig.activeReload) {
+    //   removeProvider('changeTextDisposables')
+    //   changeTextDisposables = vscode.workspace.onDidChangeTextDocument((event) => {
+    //     if (activeEditor && event.document === activeEditor.document)
+    //       init()
+    //   }, null, context.subscriptions)
+    // }
+    // else {
+    //   removeProvider('changeTextDisposables')
+    // }
 
     if (vueConfig.hoverTips) {
       removeProvider('hoverDisposables')
@@ -126,11 +128,9 @@ function initFileStore() {
     // 解析当前页面的mixins路径
     const mixinsValArr = [...store.mixinsPathsMap.values()]
     for (const path of mixinsValArr) {
-      fileStore.addFileStore(path)
-
-      const store = fileStore.getFileStore(path)!
       try {
         const mixinsFile = scanMixin(path)
+        const store = fileStore.getFileStore(path, true)
 
         store.mixinsValueMap.set(path, mixinsFile)
       }
@@ -279,7 +279,9 @@ class ImportDefinitionProvider implements vscode.DefinitionProvider {
     for (const item of store.mixinsPathsMap.values()) {
       const store = fileStore.getFileStore(item)
       const mixinsVal = store?.mixinsValueMap.get(item)
-      mixinsObj[item] = transformMixins(mixinsVal)
+
+      for (const path in mixinsVal)
+        mixinsObj[path] = transformMixins(mixinsVal[path])
     }
 
     // 判断该行内是否能匹配到mixins值
@@ -313,8 +315,8 @@ class ImportCompletionItems implements vscode.CompletionItemProvider {
 
     // 获取mixins的key val值
     for (const item of store.mixinsPathsMap.values()) {
-      const store = fileStore.getFileStore(item)
-      const mixinsVal = store?.mixinsValueMap.get(item)
+      const store = fileStore.getFileStore(item)!
+      const mixinsVal = transformMixinsValuesPath(store.mixinsValueMap.get(item))
       for (const key in mixinsVal) {
         if (['data', 'computed'].includes(key)) {
           mixinsProperty[key] = mixinsProperty[key]

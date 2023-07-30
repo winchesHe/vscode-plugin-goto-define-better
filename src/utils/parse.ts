@@ -3,16 +3,20 @@ import { existsSync, readFileSync } from 'fs'
 import { simple } from 'acorn-walk'
 import { parse } from 'acorn'
 import { workspace } from 'vscode'
-import type { MethodDeclaration, Node, PropertyAssignment, SourceFile, Type } from 'ts-morph'
+import type { MethodDeclaration, ModifierableNode, Node, PropertyAssignment, SourceFile, Type } from 'ts-morph'
 import { Project, ts } from 'ts-morph'
 import { storeMixins } from '../mixins'
 import { vueConfig } from './getConfig'
 import type { MixinsValue } from './store'
 import { fileStore } from './store'
+import { getMatchScriptIndex, isMatchLangTs } from './contextMatch'
 
 export const targetProperties = ['data', 'computed', 'methods']
 // 获取对象和函数形式的 targetProperties tsNode 值
 const targetNodeType = ['PropertyAssignment', 'MethodDeclaration']
+// 获取 vue-class-component 的值
+const vueClassMethodsType = ['GetAccessor', 'MethodDeclaration']
+const vueClassDataType = ['PropertyDeclaration']
 
 export function getTsconfigPaths(activePath = ''): Record<string, any> {
   const rootList = workspace.workspaceFolders
@@ -69,9 +73,24 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
 
     let result = {}
     const store = fileStore.getFileStore(url, true)
-    const fileContent = extractScriptText(readFileSync(url, 'utf8'))
-    const getMixinsFn = url.endsWith('.ts') ? getTsMixinsData : getMixinsData
-    const getMixinsFnParams = url.endsWith('.ts') ? url : fileContent
+    const origContent = readFileSync(url, 'utf8')
+    const fileContent = extractScriptText(origContent)
+    const matchLangTs = isMatchLangTs(origContent)
+    let getMixinsFn = getMixinsData
+    let getMixinsFnParams = fileContent
+
+    /**
+     * 1. 匹配到.ts后缀的则用 ts 类型解析
+     * 2. 匹配到lang="ts"则用vue-class-component解析函数
+     * 3. 默认则用 getMixinsData
+     * */
+    if (url.endsWith('.ts')) { setMixinsFn(getTsMixinsData, url) }
+    else if (matchLangTs) {
+      setMixinsFn(getVueClassMixinsData, [url, fileContent, {
+        overwrite: true,
+        scriptKind: ts.ScriptKind.TSX,
+      }, getMatchScriptIndex(origContent)])
+    }
 
     // 当第一次加载或者activeReload时才执行（无配置判断，因为前面会初始化）
     if (fileStore.isEmpty(store, 'mixinsPathsMap')) {
@@ -128,9 +147,44 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
       console.log(error)
       return {} as Record<string, MixinsValue>
     }
+
+    function setMixinsFn(fn: any, params: any) {
+      getMixinsFn = fn
+      getMixinsFnParams = params
+    }
   }
 
   return {} as Record<string, MixinsValue>
+}
+
+function getVueClassMixinsData(args: any[]): MixinsValue {
+  const project = new Project()
+  const [filePath, fileContent, options, scriptIndex] = args
+  const file: SourceFile = project.createSourceFile(filePath, fileContent, options)
+  const result = {} as any
+
+  const classNode = file.getChildrenOfKind(ts.SyntaxKind.ClassDeclaration)[0]
+  classNode?.forEachChild((node) => {
+    const name = node.getSymbol()?.getEscapedName() || (node as unknown as any).getName?.()
+    const kindName = node.getKindName()
+    const modifiers = (node as unknown as ModifierableNode).getModifiers?.()?.[0]?.getKindName()
+
+    // 如果是 private 属性则不处理
+    if (modifiers !== 'PrivateKeyword') {
+      if (name && vueClassMethodsType.includes(kindName)) {
+        result.methods = {
+          [name]: [node.getText(), node.getStart() + scriptIndex],
+        }
+      }
+      else if (name && vueClassDataType.includes(kindName)) {
+        result.data = {
+          [name]: [node.getText(), node.getStart() + scriptIndex],
+        }
+      }
+    }
+  })
+
+  return result as MixinsValue
 }
 
 function getTsMixinsData(filePath: string): MixinsValue {

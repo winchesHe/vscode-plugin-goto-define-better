@@ -43,3 +43,15 @@ export function getMatchMixins(str: string) {
 
   return []
 }
+
+export function isMatchLangTs(str: string) {
+  const langTsReg = /lang=["']ts["']|lang=["']typescript["']/g
+  return langTsReg.test(str)
+}
+
+export function getMatchScriptIndex(str: string) {
+  const scriptReg = /<script(?:\s[^>]*)*>/g
+  const match = scriptReg.exec(str)
+  if (match)
+    return match.index + match[0].length
+}

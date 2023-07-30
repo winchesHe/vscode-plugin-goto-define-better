@@ -8,4 +8,4 @@
 
 - [x] Ts 支持
 
-- [ ] Vue-class-component 支持
+- [x] Vue-class-component 支持

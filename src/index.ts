@@ -120,8 +120,7 @@ function initFileStore() {
       if (mixinsArr.some(item => _import.includes(item))) {
         const _normalizedPath = normalizePath(_importPath, fileUrl)
 
-        if (!_normalizedPath.endsWith('.ts'))
-          store.mixinsPathsMap.set(_import, _normalizedPath)
+        store.mixinsPathsMap.set(_import, _normalizedPath)
       }
     })
 
@@ -149,10 +148,15 @@ function updateFileStore() {
 
     if (runLanguage.includes(document.languageId)) {
       const fileUrl = document.uri.fsPath
-      const store = fileStore.getFileStore(fileUrl)
+      const _store = fileStore.getFileStore(fileUrl)
 
-      if (!store || vueConfig.activeReload)
+      if (!_store || vueConfig.activeReload) {
         initFileStore()
+      }
+      else if (_store) {
+        // 更新到当前store
+        store = _store
+      }
     }
   }
 }
@@ -249,7 +253,11 @@ class ImportHoverProvider implements HoverProvider {
         continue
 
       const markdown = new vscode.MarkdownString()
-      const text = /\n/.test(value[0]) ? `function ${key}${value[0]}` : `value: ${value[0]}`
+      const text = /\n/.test(value[0])
+        ? new RegExp(_key).test(value[0])
+          ? `function ${value[0]}`
+          : `function ${key}${value[0]}`
+        : `value: ${value[0]}`
       const hover: vscode.Hover = {
         range: matchMixinsRange,
         // contents: [

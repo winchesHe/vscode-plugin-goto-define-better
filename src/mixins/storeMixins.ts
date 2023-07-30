@@ -15,8 +15,7 @@ export function storeMixins(store: FileStoreValue, fileContent: string, url: str
     if (mixinsArr.some(item => _import.includes(item))) {
       const _normalizedPath = normalizePath(_importPath, url)
 
-      if (!_normalizedPath.endsWith('.ts'))
-        store.mixinsPathsMap.set(_import, _normalizedPath)
+      store.mixinsPathsMap.set(_import, _normalizedPath)
     }
   })
 

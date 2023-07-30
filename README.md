@@ -6,6 +6,6 @@
 
 - [x] Mixins嵌套解析
 
-- [ ] Ts 支持
+- [x] Ts 支持
 
 - [ ] Vue-class-component 支持

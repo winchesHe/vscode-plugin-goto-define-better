@@ -1,6 +1,6 @@
 import type { ExtensionContext, HoverProvider, TextEditor } from 'vscode'
 import * as vscode from 'vscode'
-import { getMatchImport, getMatchMixins, normalizePath, scanMixin, transformRegKey, vueConfig } from './utils'
+import { getMatchImport, getMatchMixins, normalizePath, scanMixin, transformEndLineKey, transformRegKey, vueConfig } from './utils'
 import type { FileStoreValue } from './utils/store'
 import { fileStore } from './utils/store'
 import { convertMixinsObjVal, transformMixins, transformMixinsValuesPath } from './mixins'
@@ -211,7 +211,7 @@ function canMatchWord(
         const startPos = match.index - 1
         const endPos = match.index + match[0].length
         const firstText = lineText[startPos]
-        const lastText = lineText[endPos]
+        const lastText = lineText[endPos] || ''
 
         return !notWordReg.test(firstText) && !notWordReg.test(lastText)
       }
@@ -219,7 +219,7 @@ function canMatchWord(
     }
 
     const firLineText = document.getText(firstRange)
-    const LasLineText = document.getText(endRange)
+    const LasLineText = transformEndLineKey(document.getText(endRange))
 
     return !notWordReg.test(firLineText) && !notWordReg.test(LasLineText)
   }

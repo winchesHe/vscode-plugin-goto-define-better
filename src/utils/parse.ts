@@ -108,11 +108,14 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
     }
 
     try {
+      const mixinsData = getMixinsFn(getMixinsFnParams)
       targetProperties.forEach((item) => {
-        result[url] = {}
+        if (!result[url])
+          result[url] = {}
+
         result[url][item] = {
           ...(result[url][item] || {}),
-          ...(getMixinsFn(getMixinsFnParams)[item] || {}),
+          ...(mixinsData[item] || {}),
         }
       })
       store.mixinsValueMap.set(url, result)
@@ -157,14 +160,20 @@ function extractNodeVal(node: PropertyAssignment | MethodDeclaration, key: strin
     const returnBody = (node as MethodDeclaration).getBody()
     const returnNode = returnBody?.getChildrenOfKind(ts.SyntaxKind.ReturnStatement)[0]
     const returnValNode = returnNode?.getDescendantsOfKind(ts.SyntaxKind.ObjectLiteralExpression)[0]
+    const returnBodyArr = returnBody?.forEachChildAsArray()
+    const bodyChildrenArr = returnBodyArr?.map(i => i?.forEachDescendantAsArray())
 
     for (const item of (returnValNode?.getProperties() || [])) {
       // 若data返回值里有对象字面量则需获取对应的值
       if (item.getKindName() === 'ShorthandPropertyAssignment') {
-        returnBody?.forEachChild((bodyNode) => {
+        returnBodyArr?.forEach((bodyNode, index) => {
           // 获取block内除return的节点
           if (bodyNode.getKindName() !== 'ReturnStatement') {
-            bodyNode?.forEachDescendant((declareNode) => {
+            // 函数形式的字面量，直接在这里获取
+            const name = bodyNode.getSymbol()?.getEscapedName()
+            if (name && name === item.getSymbol()?.getEscapedName())
+              result[name] = [bodyNode.getText(), item.getStart()]
+            bodyChildrenArr?.[index]?.forEach((declareNode) => {
               // Identifier节点没有想要的value
               if (declareNode.getKindName() !== 'Identifier') {
                 // 获取定义在return里的对象字面量的值

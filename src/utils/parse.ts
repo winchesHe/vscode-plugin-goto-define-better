@@ -80,9 +80,10 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
     let getMixinsFnParams = fileContent
 
     /**
-     * 1. 匹配到.ts后缀的则用 ts 类型解析
+     * 1. 默认则用 getMixinsData
      * 2. 匹配到lang="ts"则用vue-class-component解析函数
-     * 3. 默认则用 getMixinsData
+     * 3. 匹配到.ts后缀的则用 ts 类型解析
+     * 4. 匹配到.vue后缀的则需加上 getMatchScriptIndex(origContent)
      * */
     if (url.endsWith('.ts')) { setMixinsFn(getTsMixinsData, url) }
     else if (matchLangTs) {
@@ -90,6 +91,8 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
         overwrite: true,
         scriptKind: ts.ScriptKind.TSX,
       }, getMatchScriptIndex(origContent)])
+    } else if (url.endsWith('.vue')) {
+      setMixinsFn(getMixinsData, [fileContent, getMatchScriptIndex(origContent)])
     }
 
     // 当第一次加载或者activeReload时才执行（无配置判断，因为前面会初始化）
@@ -248,7 +251,15 @@ function extractNodeVal(node: PropertyAssignment | MethodDeclaration, key: strin
   return result as MixinsValue
 }
 
-function getMixinsData(code: string) {
+function getMixinsData(options: string | any[]) {
+  let code: string
+  let scriptIndex: number = 0
+  if (Array.isArray(options)) {
+    [code, scriptIndex] = options
+  } else {
+    code = options
+  }
+
   const ast = parse(code, { sourceType: 'module', ecmaVersion: 'latest' })
   const properties = {}
   simple(ast, {
@@ -269,7 +280,7 @@ function getMixinsData(code: string) {
       const value = {}
       node.properties.forEach((property) => {
         if (property.key?.type === 'Identifier')
-          value[property.key.name] = [evaluatePropertyValue(property.value), property.key.start]
+          value[property.key.name] = [evaluatePropertyValue(property.value), property.key.start + scriptIndex]
       })
       return value
     }

@@ -9,7 +9,7 @@ import { storeMixins } from '../mixins'
 import { vueConfig } from './getConfig'
 import type { MixinsValue } from './store'
 import { fileStore } from './store'
-import { getMatchScriptIndex, isMatchLangTs } from './contextMatch'
+import { getMatchScriptIndex, isMatchVueClass } from './contextMatch'
 
 export const targetProperties = ['data', 'computed', 'methods']
 // 获取对象和函数形式的 targetProperties tsNode 值
@@ -75,23 +75,26 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
     const store = fileStore.getFileStore(url, true)
     const origContent = readFileSync(url, 'utf8')
     const fileContent = extractScriptText(origContent)
-    const matchLangTs = isMatchLangTs(origContent)
+    const matchVueClass = isMatchVueClass(origContent)
     let getMixinsFn = getMixinsData
     let getMixinsFnParams = fileContent
 
     /**
      * 1. 默认则用 getMixinsData
-     * 2. 匹配到lang="ts"则用vue-class-component解析函数
+     * 2. 匹配到matchVueClass则用vue-class-component解析函数
      * 3. 匹配到.ts后缀的则用 ts 类型解析
      * 4. 匹配到.vue后缀的则需加上 getMatchScriptIndex(origContent)
      * */
-    if (url.endsWith('.ts')) { setMixinsFn(getTsMixinsData, url) }
-    else if (matchLangTs) {
+    if (matchVueClass) {
       setMixinsFn(getVueClassMixinsData, [url, fileContent, {
         overwrite: true,
         scriptKind: ts.ScriptKind.TSX,
       }, getMatchScriptIndex(origContent)])
-    } else if (url.endsWith('.vue')) {
+    }
+    else if (url.endsWith('.ts')) {
+      setMixinsFn(getTsMixinsData, url)
+    }
+    else if (url.endsWith('.vue')) {
       setMixinsFn(getMixinsData, [fileContent, getMatchScriptIndex(origContent)])
     }
 
@@ -116,10 +119,12 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
           mixinsFile = scanMixin(path)
         }
 
-        result = {
-          ...result,
-          ...mixinsFile,
-        }
+        targetProperties.forEach((item) => {
+          result[item] = {
+            ...(result[item] || {}),
+            ...(mixinsFile[item] || {}),
+          }
+        })
       }
     }
     else {
@@ -162,7 +167,7 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
 
 function getVueClassMixinsData(args: any[]): MixinsValue {
   const project = new Project()
-  const [filePath, fileContent, options, scriptIndex] = args
+  const [filePath, fileContent, options, scriptIndex = 0] = args
   const file: SourceFile = project.createSourceFile(filePath, fileContent, options)
   const result = {} as any
 

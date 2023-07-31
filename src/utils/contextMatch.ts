@@ -55,3 +55,8 @@ export function getMatchScriptIndex(str: string) {
   if (match)
     return match.index + match[0].length
 }
+
+export function isMatchVueClass(str: string) {
+  const vueClassReg = /vue-class-component|vue-property-decorator/g
+  return vueClassReg.test(str)
+}

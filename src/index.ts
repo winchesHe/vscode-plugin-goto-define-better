@@ -14,7 +14,8 @@ const decorationType = vscode.window.createTextEditorDecorationType({
   textDecoration: 'underline wavy',
 })
 const runLanguage = ['vue']
-const notWordReg = /[:-\w/\\\u4E00-\u9FA5\s']/
+const firstReg = /[:-\w/\\\u4E00-\u9FA5\s'(]/
+const endReg = /[:-\w/\\\u4E00-\u9FA5\s')]/
 
 export function activate(context: ExtensionContext) {
   activeEditor = vscode.window.activeTextEditor
@@ -213,7 +214,7 @@ function canMatchWord(
         const firstText = lineText[startPos]
         const lastText = lineText[endPos] || ''
 
-        return !notWordReg.test(firstText) && !notWordReg.test(lastText)
+        return !firstReg.test(firstText) && !endReg.test(lastText)
       }
       return false
     }
@@ -221,7 +222,7 @@ function canMatchWord(
     const firLineText = document.getText(firstRange)
     const LasLineText = transformEndLineKey(document.getText(endRange))
 
-    return !notWordReg.test(firLineText) && !notWordReg.test(LasLineText)
+    return !firstReg.test(firLineText) && !endReg.test(LasLineText)
   }
 
   return false

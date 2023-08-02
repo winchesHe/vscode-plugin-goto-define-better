@@ -31,7 +31,7 @@
       "properties": {
         "mixins-helper.activeHeight": {
           "type": "boolean",
-          "default": false,
+          "default": true,
           "description": "高亮 mixins 内容"
         },
         "mixins-helper.activeReload": {
@@ -47,6 +47,36 @@
         "mixins-helper.alias": {
           "type": "object",
           "description": "路径别名映射"
+        },
+        "mixins-helper.textStyle": {
+          "type": "string",
+          "default": "wavy",
+          "description": "设定高亮文本的线的样式",
+          "enum": ["solid ", "double", "dotted", "dashed", "wavy"],
+          "enumDescriptions": [
+            "画一条实线。",
+            "画一条双实线。",
+            "画一条点划线。",
+            "画一条虚线。",
+            "画一条波浪线。"
+          ]
+        },
+        "mixins-helper.textLine": {
+          "type": "string",
+          "default": "underline",
+          "description": "设定的高亮文本的修饰类型",
+          "enum": ["none ", "underline", "overline", "line-through"],
+          "enumDescriptions": [
+            "表示没有文本修饰效果。",
+            "在文本的下方有一条修饰线。",
+            "在文本的上方有一条修饰线。",
+            "有一条贯穿文本中间的修饰线。"
+          ]
+        },
+        "mixins-helper.textColor": {
+          "type": "string",
+          "default": "#5074b3",
+          "description": "设定的高亮文本的颜色"
         }
       }
     }

@@ -9,10 +9,6 @@ let activeEditor: TextEditor | undefined
 let store: FileStoreValue
 let changeTextDisposables: vscode.Disposable | false
 let hoverDisposables: vscode.Disposable | false
-const decorationType = vscode.window.createTextEditorDecorationType({
-  color: '#5074b3',
-  textDecoration: 'underline wavy',
-})
 const runLanguage = ['vue']
 const firstReg = /[:-\w/\\\u4E00-\u9FA5\s'(]/
 const endReg = /[:-\w/\\\u4E00-\u9FA5\s')]/
@@ -190,7 +186,7 @@ function initColor() {
             decorations.push(decoration)
         }
       }
-      editor.setDecorations(decorationType, decorations)
+      editor.setDecorations(vueConfig.decorationType, decorations)
     }
   }
 }

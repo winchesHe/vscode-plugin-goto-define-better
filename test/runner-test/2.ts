@@ -2,7 +2,8 @@ import { simple } from 'acorn-walk'
 import acorn from 'acorn'
 
 const code = `
-'import store from '@/store'
+import store from '@/store'
+import component1 from '@/component1'
 
 const { body } = document
 const WIDTH = 992 // refer to Bootstrap's responsive design
@@ -16,13 +17,20 @@ export default {
   },
   beforeMount() {
     window.addEventListener('resize', this.$_resizeHandler)
+  },
   beforeDestroy() {
     window.removeEventListener('resize', this.$_resizeHandler)
+  },
+  components: {
+    component1
+  },
   mounted() {
     const isMobile = this.$_isMobile()
     if (isMobile) {
       store.dispatch('app/toggleDevice', 'mobile')
       store.dispatch('app/closeSideBar', { withoutAnimation: true })
+    }
+  },
   methods: {
     test() {
       return 'test'
@@ -32,6 +40,7 @@ export default {
     $_isMobile() {
       const rect = body.getBoundingClientRect()
       return rect.width - 1 < WIDTH
+    },
     $_resizeHandler() {
       if (!document.hidden) {
         const isMobile = this.$_isMobile()
@@ -39,12 +48,14 @@ export default {
         if (isMobile) {
           store.dispatch('app/closeSideBar', { withoutAnimation: true })
         }
+      }
+    }
   }
-}'
+}
 `
 
 const ast = acorn.parse(code, { sourceType: 'module', ecmaVersion: 'latest' })
-const targetProperties = ['data', 'computed', 'methods']
+const targetProperties = ['data', 'computed', 'methods', 'components']
 const properties = {}
 simple(ast, {
   ObjectExpression(node: any) {

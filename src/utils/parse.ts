@@ -71,7 +71,7 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
     if (vueConfig.activeReload)
       fileStore.initFileStore(url)
 
-    let result = {}
+    const result = {}
     const store = fileStore.getFileStore(url, true)
     const origContent = readFileSync(url, 'utf8')
     const fileContent = extractScriptText(origContent)
@@ -258,12 +258,11 @@ function extractNodeVal(node: PropertyAssignment | MethodDeclaration, key: strin
 
 function getMixinsData(options: string | any[]) {
   let code: string
-  let scriptIndex: number = 0
-  if (Array.isArray(options)) {
+  let scriptIndex = 0
+  if (Array.isArray(options))
     [code, scriptIndex] = options
-  } else {
+  else
     code = options
-  }
 
   const ast = parse(code, { sourceType: 'module', ecmaVersion: 'latest' })
   const properties = {}

@@ -1,4 +1,5 @@
-import { TextEditorDecorationType, workspace, window } from 'vscode'
+import type { TextEditorDecorationType } from 'vscode'
+import { window, workspace } from 'vscode'
 
 export class Config {
   public activeReload = false

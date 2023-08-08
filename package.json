@@ -84,7 +84,7 @@
   "scripts": {
     "build": "tsup src/index.ts --external vscode",
     "dev": "nr build --watch",
-    "lint": "eslint .",
+    "lint": "eslint src --fix",
     "vscode:prepublish": "nr build",
     "publish": "vsce publish --no-dependencies",
     "pack": "vsce package --no-dependencies",

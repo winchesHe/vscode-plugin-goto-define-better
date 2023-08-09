@@ -1,17 +1,18 @@
 import type { ExtensionContext, HoverProvider, TextEditor } from 'vscode'
 import * as vscode from 'vscode'
-import { getMatchImport, getMatchMixins, normalizePath, scanMixin, transformEndLineKey, transformRegKey, vueConfig } from './utils'
+import { getMatchImport, getMatchMixins, getTsconfigPaths, normalizePath, scanMixin, transformEndLineKey, transformRegKey, vueConfig } from './utils'
 import type { FileStoreValue } from './utils/store'
 import { fileStore } from './utils/store'
 import { convertMixinsObjVal, transformMixins, transformMixinsValuesPath } from './mixins'
+import { ImportComponentsDefinitionProvider } from './mixins/provider/components'
 
 let activeEditor: TextEditor | undefined
 let store: FileStoreValue
 let changeTextDisposables: vscode.Disposable | false
 let hoverDisposables: vscode.Disposable | false
 const runLanguage = ['vue']
-const firstReg = /[:-\w/\\\u4E00-\u9FA5\s'(]/
-const endReg = /[:-\w/\\\u4E00-\u9FA5\s')]/
+export const firstReg = /[:-\w/\\\u4E00-\u9FA5\s'(]/
+export const endReg = /[:-\w/\\\u4E00-\u9FA5\s')]/
 
 export function activate(context: ExtensionContext) {
   activeEditor = vscode.window.activeTextEditor
@@ -36,6 +37,9 @@ export function activate(context: ExtensionContext) {
     vscode.languages.registerDefinitionProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportDefinitionProvider()),
+    vscode.languages.registerDefinitionProvider([
+      { scheme: 'file', language: 'vue' },
+    ], new ImportComponentsDefinitionProvider()),
     vscode.languages.registerCompletionItemProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportCompletionItems()),
@@ -114,8 +118,9 @@ function initFileStore() {
 
       // 在导入路径中匹配mixins的内容
       const mixinsArr = [...store.mixinsSet].map(item => item.trim())
+      const tsconfig = getTsconfigPaths(fileUrl)
       if (mixinsArr.some(item => _import.includes(item))) {
-        const _normalizedPath = normalizePath(_importPath, fileUrl)
+        const _normalizedPath = normalizePath(_importPath, fileUrl, tsconfig)
 
         store.mixinsPathsMap.set(_import, _normalizedPath)
       }

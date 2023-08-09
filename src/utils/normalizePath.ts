@@ -5,7 +5,7 @@ import { getTsconfigPaths } from './parse'
 
 const isWin = os.platform() === 'win32'
 
-export function normalizePath(targetUrl: string, activePath = '') {
+export function normalizePath(targetUrl: string, activePath: string, tsconfig?: Record<string, any>) {
   if (!targetUrl)
     return ''
 
@@ -19,7 +19,7 @@ export function normalizePath(targetUrl: string, activePath = '') {
 
   let pattern = ''
   let val = ''
-  const { pathVal, transformPath } = getTsconfigPaths(activePath)
+  const { pathVal, transformPath } = tsconfig ?? getTsconfigPaths(activePath)
 
   const isAliasImport = Object.keys(pathVal).some((item) => {
     const convertAlias = item.replace('/*', '')

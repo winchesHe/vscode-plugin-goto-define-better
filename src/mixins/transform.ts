@@ -1,4 +1,4 @@
-import type { FileStoreValue, MixinsValue } from '../utils'
+import type { FileStoreValue, MixinsValue, TargetProperties } from '../utils'
 import { fileStore, targetProperties } from '../utils'
 
 // 将data: { key: value }等转换成{ key: value }
@@ -49,4 +49,24 @@ export function transformMixinsValuesPath(target: Record<string, MixinsValue> | 
     })
   }
   return result
+}
+
+/**
+ * 转化parse后的mixins值
+ */
+export function convertMixinsDataFn(mixinsData: Record<TargetProperties, any>, store: FileStoreValue, activeUrl: string) {
+  // components: { component1: [ undefined, 545 ] }
+  const componentsData = mixinsData.components
+  const componentsKeyArr = Object.keys(componentsData)
+  // 转化为 { component: path }
+  const _convertComponentsData = fileStore.getImportUrl(store, componentsKeyArr, activeUrl)
+
+  for (const key of Object.keys(_convertComponentsData)) {
+    const value = _convertComponentsData[key]
+
+    // 为undefined赋值importUrl
+    componentsData[key][0] = value
+  }
+
+  return mixinsData
 }

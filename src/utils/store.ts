@@ -1,10 +1,10 @@
+import { normalizePath } from './normalizePath'
+import type { TargetProperties } from './parse'
+import { getTsconfigPaths } from './parse'
+
 type Data = Record<string, [string, number]>
 
-export interface MixinsValue {
-  data: Data
-  computer: Data
-  methods: Data
-}
+export type MixinsValue = Record<TargetProperties, Data>
 
 export interface FileStoreValue {
   /** 导入路径值[import, importPath] */
@@ -58,6 +58,21 @@ class StoreClass {
       return !store[storeKey].size
 
     return !Object.values(store).some(item => item.size)
+  }
+
+  public getImportUrl(store: FileStoreValue, matchImportArr: string[], activeUrl: string) {
+    const importEntries = store.importMap.entries() || []
+    const result: Record<string, string> = {}
+    const tsconfig = getTsconfigPaths(activeUrl)
+
+    for (const [_import = '', _importPath = ''] of importEntries) {
+      for (const item of matchImportArr) {
+        if (_import.includes(item))
+          result[item] = normalizePath(_importPath, activeUrl, tsconfig)
+      }
+    }
+
+    return result
   }
 }
 

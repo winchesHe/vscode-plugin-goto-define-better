@@ -5,18 +5,21 @@ import { parse } from 'acorn'
 import { workspace } from 'vscode'
 import type { MethodDeclaration, ModifierableNode, Node, PropertyAssignment, SourceFile, Type } from 'ts-morph'
 import { Project, ts } from 'ts-morph'
-import { storeMixins } from '../mixins'
+import { convertMixinsDataFn, storeMixins } from '../mixins'
+import type { ArrayToUnion } from '../types'
 import { vueConfig } from './getConfig'
 import type { MixinsValue } from './store'
 import { fileStore } from './store'
 import { getMatchScriptIndex, isMatchVueClass } from './contextMatch'
 
-export const targetProperties = ['data', 'computed', 'methods']
+export const targetProperties = ['data', 'computed', 'methods', 'components'] as const
 // 获取对象和函数形式的 targetProperties tsNode 值
 const targetNodeType = ['PropertyAssignment', 'MethodDeclaration']
 // 获取 vue-class-component 的值
 const vueClassMethodsType = ['GetAccessor', 'MethodDeclaration']
 const vueClassDataType = ['PropertyDeclaration']
+
+export type TargetProperties = ArrayToUnion<typeof targetProperties>
 
 export function getTsconfigPaths(activePath = ''): Record<string, any> {
   const rootList = workspace.workspaceFolders
@@ -119,12 +122,12 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
           mixinsFile = scanMixin(path)
         }
 
-        targetProperties.forEach((item) => {
+        for (const item of targetProperties) {
           result[item] = {
             ...(result[item] || {}),
             ...(mixinsFile[item] || {}),
           }
-        })
+        }
       }
     }
     else {
@@ -136,15 +139,17 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
 
     try {
       const mixinsData = getMixinsFn(getMixinsFnParams)
-      targetProperties.forEach((item) => {
+      const convertMixinsData = convertMixinsDataFn(mixinsData, store, url)
+
+      for (const item of targetProperties) {
         if (!result[url])
           result[url] = {}
 
         result[url][item] = {
           ...(result[url][item] || {}),
-          ...(mixinsData[item] || {}),
+          ...(convertMixinsData[item] || {}),
         }
-      })
+      }
       store.mixinsValueMap.set(url, result)
 
       return result as Record<string, MixinsValue>
@@ -201,7 +206,7 @@ function getTsMixinsData(filePath: string): MixinsValue {
   const methodsPropertyAssignment = {}
 
   file.forEachDescendant((node: Node) => {
-    const name = node.getSymbol()?.getEscapedName() as string
+    const name = node.getSymbol()?.getEscapedName() as TargetProperties
     if (targetNodeType.includes(node.getKindName()) && targetProperties.includes(name))
       methodsPropertyAssignment[name] = extractNodeVal(node as PropertyAssignment, name)
   })
@@ -256,7 +261,7 @@ function extractNodeVal(node: PropertyAssignment | MethodDeclaration, key: strin
   return result as MixinsValue
 }
 
-function getMixinsData(options: string | any[]) {
+function getMixinsData(options: string | any[]): Record<TargetProperties, any> {
   let code: string
   let scriptIndex = 0
   if (Array.isArray(options))
@@ -303,7 +308,7 @@ function getMixinsData(options: string | any[]) {
       return node.value
     }
   }
-  return properties
+  return properties as Record<TargetProperties, any>
 }
 
 function extractScriptText(ctx: string) {

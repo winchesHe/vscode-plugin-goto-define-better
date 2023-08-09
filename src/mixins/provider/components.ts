@@ -71,7 +71,7 @@ function canMatchLineTagWord(
     const startPos = match.index - 1
     const endPos = match.index + match[0].length
     const firstText = lineText[startPos]
-    const lastText = lineText[endPos] || ''
+    const lastText = lineText[endPos] || '-'
 
     return firstReg.test(firstText) && endReg.test(lastText)
   }

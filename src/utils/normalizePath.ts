@@ -41,7 +41,7 @@ export function normalizePath(targetUrl: string, activePath: string, tsconfig?: 
   return targetUrl
 }
 
-function setExtPath(url: string) {
+export function setExtPath(url: string) {
   const ext = ['.vue', '.js', '.ts']
 
   for (const item of ext) {

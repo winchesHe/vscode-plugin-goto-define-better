@@ -18,3 +18,13 @@ export function transformComponentKey(str: string) {
 
   return str.replace(/([a-z])([A-Z])/g, '$1-$2').toLowerCase()
 }
+
+/**
+ * @returns iface-component --> IfaceComponent
+ */
+export function transformUpperCamelCase(str: string) {
+  if (!str)
+    return ''
+  const parts = str.split('-')
+  return parts.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')
+}

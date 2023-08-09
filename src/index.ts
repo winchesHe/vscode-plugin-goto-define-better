@@ -5,6 +5,7 @@ import type { FileStoreValue } from './utils/store'
 import { fileStore } from './utils/store'
 import { convertMixinsObjVal, transformMixins, transformMixinsValuesPath } from './mixins'
 import { ImportComponentsDefinitionProvider } from './mixins/provider/components'
+import { ImportAllComponentsDefinitionProvider, initComponents } from './vue'
 
 let activeEditor: TextEditor | undefined
 let store: FileStoreValue
@@ -28,6 +29,7 @@ export function activate(context: ExtensionContext) {
     vscode.workspace.onDidChangeConfiguration((event) => {
       if (event.affectsConfiguration('mixins-helper')) {
         vueConfig.update()
+        initComponents()
         updateProvider()
       }
     }),
@@ -40,12 +42,16 @@ export function activate(context: ExtensionContext) {
     vscode.languages.registerDefinitionProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportComponentsDefinitionProvider()),
+    vscode.languages.registerDefinitionProvider([
+      { scheme: 'file', language: 'vue' },
+    ], new ImportAllComponentsDefinitionProvider()),
     vscode.languages.registerCompletionItemProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportCompletionItems()),
   )
 
   init()
+  initComponents()
   updateProvider()
 
   function updateProvider() {

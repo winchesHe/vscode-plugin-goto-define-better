@@ -77,6 +77,21 @@
           "type": "string",
           "default": "#5074b3",
           "description": "设定的高亮文本的颜色"
+        },
+        "mixins-helper.components": {
+          "type": "object",
+          "default": {
+            "sf": ["components-path1"]
+          },
+          "properties": {
+            "[prefix: string]": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "description": "设置组件的前缀标识 -- 组件源码的目录位置如：node_modules/@xxx/packages/components（基于根目录的相对路径）"
+          }
         }
       }
     }

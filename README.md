@@ -22,6 +22,8 @@
 
 - [x] Mixins 中引入的 Component 解析并支持跳转
 
+- [x] 全局注册组件库引入的 Component 解析并支持跳转
+
 - [] Vuex 智能补充
 
 - [] Vue-router ?

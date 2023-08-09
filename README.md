@@ -24,8 +24,10 @@
 
 - [x] 全局注册组件库引入的 Component 解析并支持跳转
 
-- [] Vuex 智能补充
+- [x] Vue-router components 跳转 (js-goto-definition 完成该功能)
 
-- [] Vue-router ?
+- [] 全局注册组件 hover 出现文档跳转信息
+
+- [] Vuex 智能补充
 
 - [] 升级为 Vue2-helper

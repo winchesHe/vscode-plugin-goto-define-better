@@ -5,7 +5,7 @@ import type { FileStoreValue } from './utils/store'
 import { fileStore } from './utils/store'
 import { convertMixinsObjVal, transformMixins, transformMixinsValuesPath } from './mixins'
 import { ImportComponentsDefinitionProvider } from './mixins/provider/components'
-import { ImportAllComponentsDefinitionProvider, ImportAllComponentsHoverProvider, initComponents } from './vue'
+import { ImportAllComponentsCompletionItems, ImportAllComponentsDefinitionProvider, ImportAllComponentsHoverProvider, initComponents } from './vue'
 
 let activeEditor: TextEditor | undefined
 let store: FileStoreValue
@@ -51,6 +51,9 @@ export function activate(context: ExtensionContext) {
     vscode.languages.registerCompletionItemProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportCompletionItems()),
+    vscode.languages.registerCompletionItemProvider([
+      { scheme: 'file', language: 'vue' },
+    ], new ImportAllComponentsCompletionItems(), '<', '-'),
   )
 
   init()

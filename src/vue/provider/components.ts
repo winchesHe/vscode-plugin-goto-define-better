@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unused-vars */
 import { basename, resolve } from 'path'
 import { readdirSync } from 'fs'
 import * as vscode from 'vscode'
@@ -70,7 +71,6 @@ export class ImportAllComponentsHoverProvider implements vscode.HoverProvider {
     for (const prefix in componentsResult) {
       const data = componentsResult[prefix]
 
-      // eslint-disable-next-line @typescript-eslint/no-unused-vars
       for (const [_, fileArr = [], docs = ''] of data) {
         for (const file of fileArr) {
           const _file = `${prefix}-${transformComponentKey(file)}`
@@ -102,6 +102,31 @@ export class ImportAllComponentsHoverProvider implements vscode.HoverProvider {
       }
     }
     return null
+  }
+}
+
+export class ImportAllComponentsCompletionItems implements vscode.CompletionItemProvider {
+  provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
+    const result: string[] = []
+    // 判断该行内是否能匹配到组件标识值
+    for (const prefix in componentsResult) {
+      const data = componentsResult[prefix]
+
+      for (const [path = '', fileArr = []] of data) {
+        for (const file of fileArr) {
+          const snippet = `<${prefix}-${transformComponentKey(file)}>`
+          result.push(snippet)
+        }
+      }
+    }
+
+    return [...result.map((i) => {
+      const completionItem = new vscode.CompletionItem(i, vscode.CompletionItemKind.Snippet)
+
+      completionItem.insertText = new vscode.SnippetString(`${i}$1${i.replace('<', '</')}`)
+
+      return completionItem
+    })]
   }
 }
 

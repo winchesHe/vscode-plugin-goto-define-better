@@ -81,17 +81,28 @@
         "mixins-helper.components": {
           "type": "object",
           "default": {
-            "sf": ["components-path1"]
+            "sf": {
+              "docs": "",
+              "fileArr": ["components-path1"]
+            }
           },
           "properties": {
             "[prefix: string]": {
-              "type": "array",
-              "items": {
-                "type": "string"
+              "type": "object",
+              "properties": {
+                "[docs: string]": {
+                  "type": "string"
+                },
+                "[fileArr: string]": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
               }
-            },
-            "description": "设置组件的前缀标识 -- 组件源码的目录位置如：node_modules/@xxx/packages/components（基于根目录的相对路径）"
-          }
+            }
+          },
+          "description": "设置组件的前缀标识 -- 组件源码的文档和目录位置如：node_modules/@xxx/packages/components（基于根目录的相对路径）"
         }
       }
     }

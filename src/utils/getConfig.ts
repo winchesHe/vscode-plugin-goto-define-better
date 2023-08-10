@@ -1,12 +1,17 @@
 import type { TextEditorDecorationType } from 'vscode'
 import { window, workspace } from 'vscode'
 
+export interface ComponentsValue {
+  docs: string
+  fileArr: string[]
+}
+
 export class Config {
   public activeReload = false
   public activeHeight = true
   public hoverTips = true
   public alias: object = {}
-  public components: Record<string, string[]> = {}
+  public components: Record<string, ComponentsValue> = {}
   public decorationType!: TextEditorDecorationType
 
   constructor() {
@@ -23,7 +28,10 @@ export class Config {
       textStyle = 'wavy',
       textColor = '#5074b3',
       components = {
-        sf: ['components-path1'],
+        sf: {
+          docs: '',
+          fileArr: ['components-path1'],
+        },
       },
     } = workspace.getConfiguration('mixins-helper')
 

@@ -16,7 +16,7 @@ export class ImportAllComponentsDefinitionProvider implements vscode.DefinitionP
       return null
 
     // 判断该行内是否能匹配到组件标识值
-    const lineText = document.getText(document.lineAt(position).range)
+    const lineText = document.lineAt(position.line).text
     for (const prefix in componentsResult) {
       const data = componentsResult[prefix]
 
@@ -67,7 +67,7 @@ export class ImportAllComponentsHoverProvider implements vscode.HoverProvider {
       return null
 
     // 判断该行内是否能匹配到组件标识值
-    const lineText = document.getText(document.lineAt(position).range)
+    const lineText = document.lineAt(position.line).text
     for (const prefix in componentsResult) {
       const data = componentsResult[prefix]
 
@@ -107,13 +107,26 @@ export class ImportAllComponentsHoverProvider implements vscode.HoverProvider {
 
 export class ImportAllComponentsCompletionItems implements vscode.CompletionItemProvider {
   provideCompletionItems(document: vscode.TextDocument, position: vscode.Position): vscode.ProviderResult<vscode.CompletionItem[] | vscode.CompletionList> {
+    let range: vscode.Range
     const result: string[] = []
+    const preText = getTextBeforePosition(document, position)
+    const startIndex = preText.indexOf('<')
+
+    if (startIndex > 0) {
+      const start = new vscode.Position(position.line, startIndex)
+      const end = new vscode.Position(position.line, preText.lastIndexOf('<') + 1)
+      range = new vscode.Range(start, end)
+    }
+
     // 判断该行内是否能匹配到组件标识值
     for (const prefix in componentsResult) {
       const data = componentsResult[prefix]
 
       for (const [path = '', fileArr = []] of data) {
         for (const file of fileArr) {
+          if (file.includes('.'))
+            continue
+
           const snippet = `<${prefix}-${transformComponentKey(file)}>`
           result.push(snippet)
         }
@@ -124,10 +137,20 @@ export class ImportAllComponentsCompletionItems implements vscode.CompletionItem
       const completionItem = new vscode.CompletionItem(i, vscode.CompletionItemKind.Snippet)
 
       completionItem.insertText = new vscode.SnippetString(`${i}$1${i.replace('<', '</')}`)
+      completionItem.detail = `${i}补全提示`
+
+      if (range)
+        completionItem.range = range
 
       return completionItem
     })]
   }
+}
+
+function getTextBeforePosition(document: vscode.TextDocument, position: vscode.Position): string {
+  const start = new vscode.Position(position.line, 0)
+  const range = new vscode.Range(start, position)
+  return document.getText(range)
 }
 
 function canMatchLineTagWord(
@@ -136,7 +159,7 @@ function canMatchLineTagWord(
 ) {
   const wordRange = document.getWordRangeAtPosition(position)!
   const word = document.getText(wordRange)
-  const lineText = document.getText(document.lineAt(position).range).trim()
+  const lineText = document.lineAt(position.line).text.trim()
   const matchWordReg = new RegExp(word, 'g')
   const match = matchWordReg.exec(lineText)
 

@@ -25,7 +25,7 @@ export class ImportComponentsDefinitionProvider implements vscode.DefinitionProv
     }
 
     // 判断该行内是否能匹配到mixins值
-    const lineText = document.getText(document.lineAt(position).range)
+    const lineText = document.lineAt(position.line).text
     for (const path in mixinsObj) {
       const obj = mixinsObj[path]
 
@@ -63,7 +63,7 @@ function canMatchLineTagWord(
 ) {
   const wordRange = document.getWordRangeAtPosition(position)!
   const word = document.getText(wordRange)
-  const lineText = document.getText(document.lineAt(position).range).trim()
+  const lineText = document.lineAt(position.line).text.trim()
   const matchWordReg = new RegExp(word, 'g')
   const match = matchWordReg.exec(lineText)
 

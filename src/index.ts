@@ -217,7 +217,7 @@ function canMatchWord(
     if (position) {
       const wordRange = document.getWordRangeAtPosition(position)!
       const word = document.getText(wordRange)
-      const lineText = document.getText(document.lineAt(position).range).trim()
+      const lineText = document.lineAt(position.line).text.trim()
       const matchWordReg = new RegExp(word, 'g')
       const match = matchWordReg.exec(lineText)
 

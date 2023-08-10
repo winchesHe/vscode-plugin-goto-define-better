@@ -26,7 +26,7 @@
 
 - [x] Vue-router components 跳转 (js-goto-definition 完成该功能)
 
-- [] 全局注册组件 hover 出现文档跳转信息
+- [x] 全局注册组件 hover 出现文档跳转信息
 
 - [] 全局注册组件智能补全提示
 

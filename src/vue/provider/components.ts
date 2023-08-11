@@ -26,7 +26,10 @@ export class ImportAllComponentsDefinitionProvider implements vscode.DefinitionP
           const upperCamelCase = transformUpperCamelCase(_file)
           const keyReg = new RegExp(_file, 'g')
           const upperCamelReg = new RegExp(upperCamelCase, 'g')
-          const match = keyReg.exec(lineText) || upperCamelReg.exec(lineText)
+
+          // 检查是否能匹配到更多的内容，如完整的el-form-item
+          const testMoreReg = checkMoreTagName(lineText, _file)
+          const match = testMoreReg || (keyReg.exec(lineText) || upperCamelReg.exec(lineText))
 
           if (!match)
             continue
@@ -77,18 +80,22 @@ export class ImportAllComponentsHoverProvider implements vscode.HoverProvider {
           const upperCamelCase = transformUpperCamelCase(_file)
           const keyReg = new RegExp(_file, 'g')
           const upperCamelReg = new RegExp(upperCamelCase, 'g')
-          const match = keyReg.exec(lineText) || upperCamelReg.exec(lineText)
+
+          // 检查是否能匹配到更多的内容，如完整的el-form-item
+          const testMoreReg = checkMoreTagName(lineText, _file)
+          const match = testMoreReg || (keyReg.exec(lineText) || upperCamelReg.exec(lineText))
 
           if (!match)
             continue
 
+          const matchValue = match[0]
           const lineNumber = document.lineAt(position).lineNumber
           const startPosition = new vscode.Position(lineNumber, match.index)
-          const endPosition = new vscode.Position(lineNumber, match.index + match[0].length)
+          const endPosition = new vscode.Position(lineNumber, match.index + matchValue.length)
           const range = new vscode.Range(startPosition, endPosition)
           // 文档地址须携带http{s?}开头，否则会变成文件跳转
           const docsLink = `${docs}/${file}`
-          const contents = new vscode.MarkdownString(`## ${file}\n文档地址: [${docsLink}](${docsLink})`)
+          const contents = new vscode.MarkdownString(`## ${matchValue}\n文档地址: [${docsLink}](${docsLink})`)
 
           // command URIs如果想在Markdown 内容中生效, 你必须设置`isTrusted`。
           // 以便你期望的命令command URIs生效
@@ -151,6 +158,16 @@ function getTextBeforePosition(document: vscode.TextDocument, position: vscode.P
   const start = new vscode.Position(position.line, 0)
   const range = new vscode.Range(start, position)
   return document.getText(range)
+}
+
+function checkMoreTagName(linkText: string, originFile: string) {
+  const testReg = new RegExp(`${originFile}-`)
+
+  if (testReg.test(linkText)) {
+    const matchReg = /(?<=<\/?)[\w-]+(?=(\s|>))/
+
+    return matchReg.exec(linkText)
+  }
 }
 
 function canMatchLineTagWord(

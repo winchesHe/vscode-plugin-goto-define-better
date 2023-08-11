@@ -164,7 +164,7 @@ function checkMoreTagName(linkText: string, originFile: string) {
   const testReg = new RegExp(`${originFile}-`)
 
   if (testReg.test(linkText)) {
-    const matchReg = /(?<=<\/?)[\w-]+(?=(\s|>))/
+    const matchReg = /(?<=<\/?)[\w-]+(?=(\s?|>?))/
 
     return matchReg.exec(linkText)
   }

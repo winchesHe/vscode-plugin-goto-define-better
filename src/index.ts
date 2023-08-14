@@ -5,12 +5,12 @@ import type { FileStoreValue } from './utils/store'
 import { fileStore } from './utils/store'
 import { convertMixinsObjVal, transformMixins, transformMixinsValuesPath } from './mixins'
 import { ImportComponentsDefinitionProvider } from './mixins/provider/components'
-import { ImportAllComponentsCompletionItems, ImportAllComponentsDefinitionProvider, ImportAllComponentsHoverProvider, initComponents } from './vue'
+import { initComponents } from './vue'
+import { updateProvider } from './provider'
 
 let activeEditor: TextEditor | undefined
 let store: FileStoreValue
-let changeTextDisposables: vscode.Disposable | false
-let hoverDisposables: vscode.Disposable | false
+
 const runLanguage = ['vue']
 export const firstReg = /[:-\w/\\\u4E00-\u9FA5\s'(]/
 export const endReg = /[:-\w/\\\u4E00-\u9FA5\s')]/
@@ -42,62 +42,14 @@ export function activate(context: ExtensionContext) {
     vscode.languages.registerDefinitionProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportComponentsDefinitionProvider()),
-    vscode.languages.registerDefinitionProvider([
-      { scheme: 'file', language: 'vue' },
-    ], new ImportAllComponentsDefinitionProvider()),
-    vscode.languages.registerHoverProvider([
-      { scheme: 'file', language: 'vue' },
-    ], new ImportAllComponentsHoverProvider()),
     vscode.languages.registerCompletionItemProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportCompletionItems()),
-    vscode.languages.registerCompletionItemProvider([
-      { scheme: 'file', language: 'vue' },
-    ], new ImportAllComponentsCompletionItems(), '<', '-'),
   )
 
   init()
   initComponents()
   updateProvider()
-
-  function updateProvider() {
-    // 暂时取消activeTextChange事件
-    // if (vueConfig.activeReload) {
-    //   removeProvider('changeTextDisposables')
-    //   changeTextDisposables = vscode.workspace.onDidChangeTextDocument((event) => {
-    //     if (activeEditor && event.document === activeEditor.document)
-    //       init()
-    //   }, null, context.subscriptions)
-    // }
-    // else {
-    //   removeProvider('changeTextDisposables')
-    // }
-
-    if (vueConfig.hoverTips) {
-      removeProvider('hoverDisposables')
-      hoverDisposables = vscode.languages.registerHoverProvider([
-        { scheme: 'file', language: 'vue' },
-      ], new ImportHoverProvider())
-    }
-    else {
-      removeProvider('hoverDisposables')
-    }
-
-    function removeProvider(type: 'changeTextDisposables' | 'hoverDisposables') {
-      switch (type) {
-        case 'changeTextDisposables':
-          changeTextDisposables && changeTextDisposables.dispose()
-          changeTextDisposables = false
-          break
-        case 'hoverDisposables':
-          hoverDisposables && hoverDisposables.dispose()
-          hoverDisposables = false
-          break
-        default:
-          break
-      }
-    }
-  }
 }
 
 function init() {
@@ -241,7 +193,7 @@ function canMatchWord(
   return false
 }
 
-class ImportHoverProvider implements HoverProvider {
+export class ImportHoverProvider implements HoverProvider {
   provideHover(document: vscode.TextDocument, position: vscode.Position): vscode.ProviderResult<vscode.Hover> {
     const wordRange = document.getWordRangeAtPosition(position)
 

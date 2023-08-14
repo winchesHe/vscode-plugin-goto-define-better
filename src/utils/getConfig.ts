@@ -10,6 +10,9 @@ export class Config {
   public activeReload = false
   public activeHeight = true
   public hoverTips = true
+  public componentsCompletion = true
+  public componentsHoverTips = true
+  public componentsGotoDefinition = true
   public alias: object = {}
   public components: Record<string, ComponentsValue> = {}
   public decorationType!: TextEditorDecorationType
@@ -23,6 +26,9 @@ export class Config {
       activeReload = false,
       activeHeight = true,
       hoverTips = true,
+      componentsCompletion = true,
+      componentsHoverTips = true,
+      componentsGotoDefinition = true,
       alias = {},
       textLine = 'underline',
       textStyle = 'wavy',
@@ -38,6 +44,9 @@ export class Config {
     this.activeHeight = activeHeight
     this.activeReload = activeReload
     this.hoverTips = hoverTips
+    this.componentsCompletion = componentsCompletion
+    this.componentsHoverTips = componentsHoverTips
+    this.componentsGotoDefinition = componentsGotoDefinition
     this.alias = alias
     this.components = components
     this.decorationType = window.createTextEditorDecorationType({

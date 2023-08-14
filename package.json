@@ -103,6 +103,21 @@
             }
           },
           "description": "设置组件的前缀标识 -- 组件源码的文档和目录位置如：node_modules/@xxx/packages/components（基于根目录的相对路径）"
+        },
+        "mixins-helper.componentsGotoDefinition": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "开启组件库注册组件 `跳转` 功能"
+        },
+        "mixins-helper.componentsHoverTips": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "开启组件库注册组件 `Hover提示` 功能"
+        },
+        "mixins-helper.componentsCompletion": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "开启组件库注册组件 `智能补全` 功能"
         }
       }
     }

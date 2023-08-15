@@ -32,14 +32,14 @@ export function updateProvider() {
   else {
     removeProvider('hoverTips')
   }
-  if (vueConfig.componentsCompletion) {
-    removeProvider('componentsCompletion')
-    allCompCompletionDisposables = languages.registerDefinitionProvider([
+  if (vueConfig.componentsGotoDefinition) {
+    removeProvider('componentsGotoDefinition')
+    allCompDefinitionDisposables = languages.registerDefinitionProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportAllComponentsDefinitionProvider())
   }
   else {
-    removeProvider('componentsCompletion')
+    removeProvider('componentsGotoDefinition')
   }
   if (vueConfig.componentsHoverTips) {
     removeProvider('componentsHoverTips')
@@ -50,14 +50,14 @@ export function updateProvider() {
   else {
     removeProvider('componentsHoverTips')
   }
-  if (vueConfig.componentsGotoDefinition) {
-    removeProvider('componentsGotoDefinition')
-    allCompDefinitionDisposables = languages.registerCompletionItemProvider([
+  if (vueConfig.componentsCompletion) {
+    removeProvider('componentsCompletion')
+    allCompCompletionDisposables = languages.registerCompletionItemProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportAllComponentsCompletionItems(), '<', '-')
   }
   else {
-    removeProvider('componentsGotoDefinition')
+    removeProvider('componentsCompletion')
   }
 
   function removeProvider(type: keyof typeof vueConfig) {

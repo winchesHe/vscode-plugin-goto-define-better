@@ -57,15 +57,18 @@ export function transformMixinsValuesPath(target: Record<string, MixinsValue> | 
 export function convertMixinsDataFn(mixinsData: Record<TargetProperties, any>, store: FileStoreValue, activeUrl: string) {
   // components: { component1: [ undefined, 545 ] }
   const componentsData = mixinsData.components
-  const componentsKeyArr = Object.keys(componentsData)
-  // 转化为 { component: path }
-  const _convertComponentsData = fileStore.getImportUrl(store, componentsKeyArr, activeUrl)
 
-  for (const key of Object.keys(_convertComponentsData)) {
-    const value = _convertComponentsData[key]
+  if (componentsData) {
+    const componentsKeyArr = Object.keys(componentsData)
+    // 转化为 { component: path }
+    const _convertComponentsData = fileStore.getImportUrl(store, componentsKeyArr, activeUrl)
 
-    // 为undefined赋值importUrl
-    componentsData[key][0] = value
+    for (const key of Object.keys(_convertComponentsData)) {
+      const value = _convertComponentsData[key]
+
+      // 为undefined赋值importUrl
+      componentsData[key][0] = value
+    }
   }
 
   return mixinsData

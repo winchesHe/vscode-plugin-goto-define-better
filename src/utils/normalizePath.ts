@@ -1,9 +1,10 @@
 import path from 'path'
 import os from 'os'
-import { existsSync } from 'fs'
+import { workspace } from 'vscode'
 import { getTsconfigPaths } from './parse'
 
 const isWin = os.platform() === 'win32'
+const rootUrl = workspace.rootPath!
 
 export function normalizePath(targetUrl: string, activePath: string, tsconfig?: Record<string, any>) {
   if (!targetUrl)
@@ -30,7 +31,7 @@ export function normalizePath(targetUrl: string, activePath: string, tsconfig?: 
   })
   const _targetUrl = isAliasImport ? targetUrl.replace(pattern, val) : targetUrl
   const transformUrl = setExtPath(path.join(transformPath, _targetUrl))
-  const rootTransformUrl = setExtPath(path.join(convertPath, _targetUrl))
+  const rootTransformUrl = setExtPath(path.join(rootUrl, _targetUrl))
 
   if (existsSync(transformUrl))
     return transformUrl

@@ -13,7 +13,7 @@ let store: FileStoreValue
 
 const runLanguage = ['vue']
 export const firstReg = /[:-\w/\\\u4E00-\u9FA5\s'(]/
-export const endReg = /[:-\w/\\\u4E00-\u9FA5\s')]/
+export const endReg = /[:-\w/\\\u4E00-\u9FA5\s']/
 
 export function activate(context: ExtensionContext) {
   activeEditor = vscode.window.activeTextEditor

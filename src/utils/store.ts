@@ -2,7 +2,8 @@ import { normalizePath } from './normalizePath'
 import type { TargetProperties } from './parse'
 import { getTsconfigPaths } from './parse'
 
-type Data = Record<string, [string, number]>
+/** Mixins的值，name: [value, value的位置] */
+export type Data = Record<string, [string, number]>
 
 export type MixinsValue = Record<TargetProperties, Data>
 

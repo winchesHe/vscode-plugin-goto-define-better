@@ -1,5 +1,10 @@
-import type { FileStoreValue, MixinsValue, TargetProperties } from '../utils'
+import type { Data, FileStoreValue, MixinsValue, TargetProperties } from '../utils'
 import { fileStore, targetProperties } from '../utils'
+
+/** [value, value的位置，类型] */
+export type DataTuple = [string, number, TargetProperties]
+/** 添加上类型后的Mixins的值，name: [value, value的位置，类型] */
+export type transformMixinsData = Record<string, DataTuple>
 
 // 将data: { key: value }等转换成{ key: value }
 export function transformMixins(obj: Record<string, any> = {}) {
@@ -14,9 +19,9 @@ export function transformMixins(obj: Record<string, any> = {}) {
   return result
 }
 
-// 获取mixins的key value值[[key, value]]
+// 转化为Mixins值，变成{key: value}
 export function convertMixinsObjVal(store: FileStoreValue) {
-  let mixinsObj: Record<string, any> = {}
+  let mixinsObj: Record<string, DataTuple> = {}
 
   // 获取mixins的key val值
   for (const item of store.mixinsPathsMap.values()) {
@@ -36,12 +41,13 @@ export function transformMixinsValuesPath(target: Record<string, MixinsValue> | 
   if (!target)
     return
 
-  const result = {} as MixinsValue
+  const result = {} as transformMixinsData
 
   for (const key in target) {
     const _target = target[key]
 
     targetProperties.forEach((item) => {
+      addMixinsTypes(_target[item], item)
       result[item] = {
         ...(result[item] || {}),
         ...(_target[item] || {}),
@@ -49,6 +55,16 @@ export function transformMixinsValuesPath(target: Record<string, MixinsValue> | 
     })
   }
   return result
+}
+
+/**
+ * 为mixins值添加上类型
+ */
+function addMixinsTypes(target: Data, type: string) {
+  for (const key of Object.keys(target || {})) {
+    const val = target[key] || []
+    val.push(type)
+  }
 }
 
 /**

@@ -1,5 +1,6 @@
 import path from 'path'
 import os from 'os'
+import { existsSync } from 'node:fs'
 import { workspace } from 'vscode'
 import { getTsconfigPaths } from './parse'
 

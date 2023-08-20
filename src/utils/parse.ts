@@ -12,7 +12,7 @@ import type { MixinsValue } from './store'
 import { fileStore } from './store'
 import { getMatchScriptIndex, isMatchVueClass } from './contextMatch'
 
-export const targetProperties = ['data', 'computed', 'methods', 'components'] as const
+export const targetProperties = ['data', 'computed', 'methods', 'props', 'components'] as const
 // 获取对象和函数形式的 targetProperties tsNode 值
 const targetNodeType = ['PropertyAssignment', 'MethodDeclaration']
 // 获取 vue-class-component 的值
@@ -112,20 +112,25 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
         const _store = fileStore.getFileStore(path)
 
         if (_store) {
-          // 当第一次加载或者activeReload时才执行
+          // activeReload或者不存在mixins值时才执行
           if (fileStore.isEmpty(_store, 'mixinsValueMap') || vueConfig.activeReload)
             mixinsFile = scanMixin(path)
           else
             mixinsFile = _store.mixinsValueMap.get(path)!
         }
         else {
+          // 当第一次加载
           mixinsFile = scanMixin(path)
         }
 
-        for (const item of targetProperties) {
-          result[item] = {
-            ...(result[item] || {}),
-            ...(mixinsFile[item] || {}),
+        for (const path of Object.keys(mixinsFile)) {
+          if (!result[path])
+            result[path] = {}
+          for (const item of targetProperties) {
+            result[path][item] = {
+              ...(result[path][item] || {}),
+              ...(mixinsFile[path][item] || {}),
+            }
           }
         }
       }
@@ -285,7 +290,15 @@ function getMixinsData(options: string | any[]): Record<TargetProperties, any> {
     },
   })
   function evaluatePropertyValue(node, name?) {
-    if (node.type === 'ObjectExpression') {
+    if (node.type === 'ObjectExpression' && name === 'props') {
+      const value = {}
+      node.properties.forEach((property) => {
+        if (property.key?.type === 'Identifier')
+          value[property.key.name] = [code.substring(property.start, property.end), property.key.start + scriptIndex]
+      })
+      return value
+    }
+    else if (node.type === 'ObjectExpression') {
       const value = {}
       node.properties.forEach((property) => {
         if (property.key?.type === 'Identifier')

@@ -201,7 +201,7 @@ export class ImportHoverProvider implements HoverProvider {
       return null
 
     // 获取mixins的key val值
-    const mixinsObj: Record<string, any> = convertMixinsObjVal(store)
+    const mixinsObj = convertMixinsObjVal(store)
 
     // 判断该行内是否能匹配到mixins值
     for (const [key = '', value = []] of Object.entries(mixinsObj)) {
@@ -218,11 +218,14 @@ export class ImportHoverProvider implements HoverProvider {
       if (!matchMixinsRange)
         continue
 
+      const type = value[2]
       const markdown = new vscode.MarkdownString()
       const text = /\n/.test(value[0])
-        ? new RegExp(_key).test(value[0])
-          ? `function ${value[0]}`
-          : `function ${key}${value[0]}`
+        ? type === 'props'
+          ? `${value[0]}`
+          : new RegExp(_key).test(value[0])
+            ? `function ${value[0]}`
+            : `function ${key}${value[0]}`
         : `value: ${value[0]}`
       const hover: vscode.Hover = {
         range: matchMixinsRange,

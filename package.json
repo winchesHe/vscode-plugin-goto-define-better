@@ -120,6 +120,24 @@
           "markdownDescription": "开启组件库注册组件 `智能补全` 功能"
         }
       }
+    },
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "mixins-explorer",
+          "title": "Mixins 助手",
+          "icon": "res/dep.svg"
+        }
+      ]
+    },
+    "views": {
+      "mixins-explorer": [
+        {
+          "id": "mixins-tree",
+          "name": "Mixins 助手",
+          "contextualTitle": "Mixins 助手"
+        }
+      ]
     }
   },
   "scripts": {

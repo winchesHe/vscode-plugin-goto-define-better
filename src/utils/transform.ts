@@ -6,7 +6,7 @@ export function transformRegKey(str: string) {
 }
 
 export function transformEndLineKey(str: string) {
-  return str.replace(/\n\r|\n|\r/, '')
+  return str.replace(/\r\n|\n|\r/, '')
 }
 
 /**
@@ -27,4 +27,12 @@ export function transformUpperCamelCase(str: string) {
     return ''
   const parts = str.split('-')
   return parts.map(word => word.charAt(0).toUpperCase() + word.slice(1)).join('')
+}
+
+/**
+ * 去除掉多余的空格
+ */
+
+export function transformRedundantSpace(str: string) {
+  return str.replace(/(?<=[\n|\r|\r\n])\s+(?=}$)/, '')
 }

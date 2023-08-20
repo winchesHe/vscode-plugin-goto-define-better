@@ -1,12 +1,13 @@
 import type { ExtensionContext, HoverProvider, TextEditor } from 'vscode'
 import * as vscode from 'vscode'
 import { getMatchImport, getMatchMixins, getTsconfigPaths, normalizePath, scanMixin, transformEndLineKey, transformRegKey, vueConfig } from './utils'
-import type { FileStoreValue } from './utils/store'
+import type { FileStoreValue, MixinsValue } from './utils/store'
 import { fileStore } from './utils/store'
-import { convertMixinsObjVal, transformMixins, transformMixinsValuesPath } from './mixins'
+import { convertMixinsObjVal, copyMixinsData, transformMixins, transformMixinsValuesPath } from './mixins'
 import { ImportComponentsDefinitionProvider } from './mixins/provider/components'
 import { initComponents } from './vue'
 import { updateProvider } from './provider'
+import { MixinsTree } from './mixins/provider/tree'
 
 let activeEditor: TextEditor | undefined
 let store: FileStoreValue
@@ -45,6 +46,7 @@ export function activate(context: ExtensionContext) {
     vscode.languages.registerCompletionItemProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportCompletionItems()),
+    vscode.window.registerTreeDataProvider('mixins-tree', new MixinsTree()),
   )
 
   init()
@@ -92,18 +94,23 @@ function initFileStore() {
 
     // 解析当前页面的mixins路径
     const mixinsValArr = [...store.mixinsPathsMap.values()]
-    for (const path of mixinsValArr) {
-      try {
+    try {
+      const result: Record<string, MixinsValue> = {}
+
+      for (const path of mixinsValArr) {
         const mixinsFile = scanMixin(path)
         const store = fileStore.getFileStore(path, true)
 
         store.mixinsValueMap.set(path, mixinsFile)
+        copyMixinsData(result, mixinsFile)
       }
-      catch (error) {
-        // mixins解析错误，已知不支持：ts，带ts的vue
-        // eslint-disable-next-line no-console
-        console.log(error)
-      }
+
+      store.mixinsValueMap.set(fileUrl, result)
+    }
+    catch (error) {
+      // mixins解析错误，已知不支持：ts，带ts的vue
+      // eslint-disable-next-line no-console
+      console.log(error)
     }
   }
 }
@@ -220,13 +227,14 @@ export class ImportHoverProvider implements HoverProvider {
 
       const type = value[2]
       const markdown = new vscode.MarkdownString()
-      const text = /\n/.test(value[0])
+      const textValue = value[0].replace(/function\s?/, '')
+      const text = /\n/.test(textValue)
         ? type === 'props'
-          ? `${value[0]}`
-          : new RegExp(_key).test(value[0])
-            ? `function ${value[0]}`
-            : `function ${key}${value[0]}`
-        : `value: ${value[0]}`
+          ? `${textValue}`
+          : new RegExp(_key).test(textValue)
+            ? `function ${textValue}`
+            : `function ${key}${textValue}`
+        : `value: ${textValue}`
       const hover: vscode.Hover = {
         range: matchMixinsRange,
         // contents: [

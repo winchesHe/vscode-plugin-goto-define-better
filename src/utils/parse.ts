@@ -11,6 +11,7 @@ import { vueConfig } from './getConfig'
 import type { MixinsValue } from './store'
 import { fileStore } from './store'
 import { getMatchScriptIndex, isMatchVueClass } from './contextMatch'
+import { transformRedundantSpace } from './transform'
 
 export const targetProperties = ['data', 'computed', 'methods', 'props', 'components'] as const
 // 获取对象和函数形式的 targetProperties tsNode 值
@@ -191,12 +192,12 @@ function getVueClassMixinsData(args: any[]): MixinsValue {
     if (modifiers !== 'PrivateKeyword') {
       if (name && vueClassMethodsType.includes(kindName)) {
         result.methods = {
-          [name]: [node.getText(), node.getStart() + scriptIndex],
+          [name]: [transformRedundantSpace(node.getText()), node.getStart() + scriptIndex],
         }
       }
       else if (name && vueClassDataType.includes(kindName)) {
         result.data = {
-          [name]: [node.getText(), node.getStart() + scriptIndex],
+          [name]: [transformRedundantSpace(node.getText()), node.getStart() + scriptIndex],
         }
       }
     }
@@ -224,7 +225,7 @@ function extractNodeVal(node: PropertyAssignment | MethodDeclaration, key: strin
   // 解析对象形式
   if (node.getKindName() === 'PropertyAssignment') {
     ((node as PropertyAssignment).getInitializer() as unknown as Type)?.getProperties()?.forEach((item: any) => {
-      result[item.getSymbol()?.getEscapedName()] = [item.getText(), item.getStart()]
+      result[item.getSymbol()?.getEscapedName()] = [transformRedundantSpace(item.getText()), item.getStart()]
     })
   }
   // 解析函数形式
@@ -244,14 +245,14 @@ function extractNodeVal(node: PropertyAssignment | MethodDeclaration, key: strin
             // 函数形式的字面量，直接在这里获取
             const name = bodyNode.getSymbol()?.getEscapedName()
             if (name && name === item.getSymbol()?.getEscapedName())
-              result[name] = [bodyNode.getText(), item.getStart()]
+              result[name] = [transformRedundantSpace(bodyNode.getText()), item.getStart()]
             bodyChildrenArr?.[index]?.forEach((declareNode) => {
               // Identifier节点没有想要的value
               if (declareNode.getKindName() !== 'Identifier') {
                 // 获取定义在return里的对象字面量的值
                 const name = declareNode.getSymbol()?.getEscapedName()
                 if (name && name === item.getSymbol()?.getEscapedName())
-                  result[name] = [declareNode.getText(), item.getStart()]
+                  result[name] = [transformRedundantSpace(declareNode.getText()), item.getStart()]
               }
             })
           }
@@ -260,7 +261,7 @@ function extractNodeVal(node: PropertyAssignment | MethodDeclaration, key: strin
       }
       const name = item.getSymbol()?.getEscapedName()
       if (name)
-        result[name] = [item.getText(), item.getStart()]
+        result[name] = [transformRedundantSpace(item.getText()), item.getStart()]
     }
   }
   return result as MixinsValue
@@ -294,7 +295,7 @@ function getMixinsData(options: string | any[]): Record<TargetProperties, any> {
       const value = {}
       node.properties.forEach((property) => {
         if (property.key?.type === 'Identifier')
-          value[property.key.name] = [code.substring(property.start, property.end), property.key.start + scriptIndex]
+          value[property.key.name] = [transformRedundantSpace(code.substring(property.start, property.end)), property.key.start + scriptIndex]
       })
       return value
     }
@@ -312,10 +313,10 @@ function getMixinsData(options: string | any[]): Record<TargetProperties, any> {
         if (property)
           return evaluatePropertyValue(property)
       }
-      return code.substring(node.start, node.end)
+      return transformRedundantSpace(code.substring(node.start, node.end))
     }
     else if (node.type === 'ArrayExpression') {
-      return code.substring(node.start, node.end)
+      return transformRedundantSpace(code.substring(node.start, node.end))
     }
     else {
       return node.value

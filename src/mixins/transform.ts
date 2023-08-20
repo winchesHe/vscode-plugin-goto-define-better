@@ -89,3 +89,44 @@ export function convertMixinsDataFn(mixinsData: Record<TargetProperties, any>, s
 
   return mixinsData
 }
+
+/**
+ * 去掉path值，将values合并
+ * path: mixinsValue ==> { data: value }
+ */
+export function omitPathMixinsData(target: Record<string, MixinsValue> | undefined) {
+  const result = {} as Record<TargetProperties, any>
+
+  if (!target)
+    return result
+
+  for (const val of Object.values(target)) {
+    for (const item of targetProperties) {
+      result[item] = {
+        ...(result[item] || {}),
+        ...(val[item] || {}),
+      }
+    }
+  }
+
+  return result
+}
+
+/**
+ * 将Mixins值，拷贝到目标对象
+ */
+export function copyMixinsData(target: Record<string, MixinsValue>, mixinsData: Record<string, MixinsValue>) {
+  for (const url of Object.keys(mixinsData || {})) {
+    const data = mixinsData[url]
+
+    for (const item of targetProperties) {
+      if (!target[url])
+        target[url] = {} as MixinsValue
+
+      target[url][item] = {
+        ...(target[url][item] || {}),
+        ...(data[item] || {}),
+      }
+    }
+  }
+}

@@ -7,7 +7,8 @@ import { convertMixinsObjVal, copyMixinsData, transformMixins, transformMixinsVa
 import { ImportComponentsDefinitionProvider } from './mixins/provider/components'
 import { initComponents } from './vue'
 import { updateProvider } from './provider'
-import { MixinsTree } from './mixins/provider/tree'
+import type { Dependency } from './mixins/provider/tree'
+import { mixinsTreeProvider, updateTree } from './mixins/provider/tree'
 
 let activeEditor: TextEditor | undefined
 let store: FileStoreValue
@@ -24,6 +25,7 @@ export function activate(context: ExtensionContext) {
       activeEditor = editor!
       if (activeEditor) {
         updateFileStore()
+        updateTree()
         vueConfig.activeHeight && initColor()
       }
     }, null, context.subscriptions),
@@ -46,8 +48,11 @@ export function activate(context: ExtensionContext) {
     vscode.languages.registerCompletionItemProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportCompletionItems()),
-    vscode.window.registerTreeDataProvider('mixins-tree', new MixinsTree()),
+    vscode.window.registerTreeDataProvider('mixinsTree', mixinsTreeProvider),
   )
+
+  vscode.commands.registerCommand('mixins-explorer.refresh', () => mixinsTreeProvider.refresh())
+  vscode.commands.registerCommand('mixins-explorer.gotoDefinition', (node: Dependency) => mixinsTreeProvider.gotoDefinition(node))
 
   init()
   initComponents()

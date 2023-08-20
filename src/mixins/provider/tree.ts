@@ -7,6 +7,35 @@ import { omitPathMixinsData } from '../transform'
 
 export class MixinsTree implements vscode.TreeDataProvider<Dependency> {
   private store: FileStoreValue | undefined
+  private _onDidChangeTreeData: vscode.EventEmitter<Dependency | undefined | void> = new vscode.EventEmitter<Dependency | undefined | void>()
+  readonly onDidChangeTreeData: vscode.Event<Dependency | undefined | void> = this._onDidChangeTreeData.event
+
+  refresh() {
+    this._onDidChangeTreeData.fire()
+  }
+
+  async gotoDefinition(node: Dependency) {
+    const { fileUrl, mixinsData, label } = node
+    if (fileUrl && mixinsData) {
+      if (mixinsData[2] === 'components') {
+        const args: [vscode.Uri] = [
+          vscode.Uri.file(mixinsData[0]),
+        ]
+
+        return vscode.commands.executeCommand('vscode.open', ...args)
+      }
+      const newDocument = await vscode.workspace.openTextDocument(fileUrl)
+
+      const args: [vscode.Uri, vscode.TextDocumentShowOptions] = [
+        vscode.Uri.file(fileUrl),
+        {
+          selection: new vscode.Range(newDocument.positionAt(mixinsData[1]), newDocument.positionAt(mixinsData[1] + label.length)),
+        },
+      ]
+
+      vscode.commands.executeCommand('vscode.open', ...args)
+    }
+  }
 
   getTreeItem(element: Dependency): vscode.TreeItem | Thenable<vscode.TreeItem> {
     return element
@@ -19,23 +48,29 @@ export class MixinsTree implements vscode.TreeDataProvider<Dependency> {
     this.store = store
 
     const valueMap = store?.mixinsValueMap.get(fileUrl)
-    const valueObj = omitPathMixinsData(valueMap)
-    const result: Dependency[] = []
 
-    if (!element) {
-      for (const key of Object.keys(valueObj))
-        result.push(new Dependency(key, vscode.TreeItemCollapsibleState.Expanded))
+    if (valueMap) {
+      const valueObj = omitPathMixinsData(valueMap)
+      const result: Dependency[] = []
 
-      return result
-    }
-    else {
-      const label = element.label
-      for (const key of Object.keys(valueObj[label])) {
-        const mixinsData = valueObj[label][key]
-        result.push(new Dependency(key, vscode.TreeItemCollapsibleState.None, mixinsData))
+      if (!element) {
+        for (const key of Object.keys(valueObj))
+          result.push(new Dependency(key, vscode.TreeItemCollapsibleState.Expanded))
+
+        return result
       }
+      else {
+        const label = element.label as TargetProperties
+        for (const path of Object.keys(valueMap)) {
+          const valueObj = valueMap[path]
+          for (const key of Object.keys(valueObj[label])) {
+            const mixinsData = valueObj[label][key] as unknown as DataTuple
+            result.push(new Dependency(key, vscode.TreeItemCollapsibleState.None, mixinsData, undefined, path))
+          }
+        }
 
-      return result
+        return result
+      }
     }
   }
 }
@@ -46,12 +81,14 @@ export class Dependency extends vscode.TreeItem {
     public readonly collapsibleState: vscode.TreeItemCollapsibleState,
     public readonly mixinsData?: DataTuple,
     public readonly command?: vscode.Command,
+    public readonly fileUrl?: string,
   ) {
     super(label, collapsibleState)
 
     const value = mixinsData?.[0].replace(/function\s?/, '')
 
     if (value) {
+      this.contextValue = 'dependency'
       const type = mixinsData?.[2] as TargetProperties
       const tooltip = /\n/.test(value)
         ? type === 'props'
@@ -69,6 +106,10 @@ export class Dependency extends vscode.TreeItem {
     light: path.resolve(extRoot, 'res/light/dependency.svg'),
     dark: path.resolve(extRoot, 'res/dark/dependency.svg'),
   }
+}
 
-  contextValue = 'dependency'
+export const mixinsTreeProvider = new MixinsTree()
+
+export function updateTree() {
+  mixinsTreeProvider.refresh()
 }

@@ -133,12 +133,46 @@
     "views": {
       "mixins-explorer": [
         {
-          "id": "mixins-tree",
+          "id": "mixinsTree",
           "name": "Mixins 助手",
           "contextualTitle": "Mixins 助手"
         }
       ]
-    }
+    },
+    "commands": [
+      {
+				"command": "mixins-explorer.refresh",
+				"title": "刷新",
+				"icon": {
+					"light": "res/light/refresh.svg",
+					"dark": "res/dark/refresh.svg"
+				}
+			},
+      {
+				"command": "mixins-explorer.gotoDefinition",
+				"title": "跳转到定义处",
+				"icon": {
+					"light": "res/light/refresh.svg",
+					"dark": "res/icon.png"
+				}
+			}
+    ],
+    "menus": {
+			"view/title": [
+				{
+					"command": "mixins-explorer.refresh",
+					"when": "view == mixinsTree",
+					"group": "navigation"
+				}
+			],
+			"view/item/context": [
+				{
+					"command": "mixins-explorer.gotoDefinition",
+					"when": "view == mixinsTree && viewItem == dependency",
+					"group": "inline"
+				}
+			]
+		}
   },
   "scripts": {
     "build": "tsup src/index.ts --external vscode",

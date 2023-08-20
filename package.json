@@ -126,7 +126,7 @@
         {
           "id": "mixins-explorer",
           "title": "Mixins 助手",
-          "icon": "res/dep.svg"
+          "icon": "res/icon.png"
         }
       ]
     },

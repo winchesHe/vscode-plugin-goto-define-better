@@ -34,5 +34,6 @@ export function transformUpperCamelCase(str: string) {
  */
 
 export function transformRedundantSpace(str: string) {
-  return str.replace(/(?<=[\n|\r|\r\n])\s+(?=}$)/, '')
+  // return str.replace(/(?<=[\n|\r|\r\n])\s+(?=}$)/, '')
+  return str
 }

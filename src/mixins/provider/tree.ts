@@ -86,9 +86,10 @@ export class Dependency extends vscode.TreeItem {
     super(label, collapsibleState)
 
     try {
-      const value = `${JSON.stringify(mixinsData?.[0])}`.replace(/function\s?/, '')
+      const valueType = typeof mixinsData?.[0] === 'object' ? `${JSON.stringify(mixinsData?.[0])}` : `${mixinsData?.[0]}`
+      const value = valueType?.replace(/function\s?/, '')
 
-      if (value !== 'undefined') {
+      if (mixinsData && value) {
         this.contextValue = 'dependency'
         const type = mixinsData?.[2] as TargetProperties
         const tooltip = /\n/.test(value)

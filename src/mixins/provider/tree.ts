@@ -85,20 +85,25 @@ export class Dependency extends vscode.TreeItem {
   ) {
     super(label, collapsibleState)
 
-    const value = mixinsData?.[0].replace(/function\s?/, '')
+    try {
+      const value = `${JSON.stringify(mixinsData?.[0])}`.replace(/function\s?/, '')
 
-    if (value) {
-      this.contextValue = 'dependency'
-      const type = mixinsData?.[2] as TargetProperties
-      const tooltip = /\n/.test(value)
-        ? type === 'props'
-          ? `${value}`
-          : new RegExp(label).test(value)
-            ? `function ${value}`
-            : `function ${label}${value}`
-        : `value: ${value}`
-      this.tooltip = new vscode.MarkdownString().appendCodeblock(`${tooltip || '未知'}`, 'typescript')
-      this.description = type === 'data' ? `${value || ''}` : ''
+      if (value !== 'undefined') {
+        this.contextValue = 'dependency'
+        const type = mixinsData?.[2] as TargetProperties
+        const tooltip = /\n/.test(value)
+          ? type === 'props'
+            ? `${value}`
+            : new RegExp(label).test(value)
+              ? `function ${value}`
+              : `function ${label}${value}`
+          : `value: ${value}`
+        this.tooltip = new vscode.MarkdownString().appendCodeblock(`${tooltip || '未知'}`, 'typescript')
+        this.description = type === 'data' ? `${value || ''}` : ''
+      }
+    }
+    catch (error) {
+      console.error(error)
     }
   }
 

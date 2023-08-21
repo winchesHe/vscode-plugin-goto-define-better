@@ -63,7 +63,8 @@ export function transformMixinsValuesPath(target: Record<string, MixinsValue> | 
 function addMixinsTypes(target: Data, type: string) {
   for (const key of Object.keys(target || {})) {
     const val = target[key] || []
-    val.push(type)
+    if (val.length <= 2)
+      val.push(type)
   }
 }
 

@@ -1,7 +1,8 @@
 import type { Disposable } from 'vscode'
-import { languages } from 'vscode'
+import { languages, window } from 'vscode'
 import { vueConfig } from './utils'
 import { ImportAllComponentsCompletionItems, ImportAllComponentsDefinitionProvider, ImportAllComponentsHoverProvider } from './vue'
+import { mixinsTreeProvider } from './mixins/provider/tree'
 import { ImportHoverProvider } from '.'
 
 let changeTextDisposables: Disposable | false
@@ -9,6 +10,7 @@ let hoverDisposables: Disposable | false
 let allCompHoverDisposables: Disposable | false
 let allCompCompletionDisposables: Disposable | false
 let allCompDefinitionDisposables: Disposable | false
+let treeDisposables: Disposable | false
 
 export function updateProvider() {
   // 暂时取消activeTextChange事件
@@ -59,6 +61,13 @@ export function updateProvider() {
   else {
     removeProvider('componentsCompletion')
   }
+  if (vueConfig.tree) {
+    removeProvider('tree')
+    treeDisposables = window.registerTreeDataProvider('mixinsTree', mixinsTreeProvider)
+  }
+  else {
+    removeProvider('tree')
+  }
 
   function removeProvider(type: keyof typeof vueConfig) {
     switch (type) {
@@ -81,6 +90,10 @@ export function updateProvider() {
       case 'componentsGotoDefinition':
         allCompDefinitionDisposables && allCompDefinitionDisposables.dispose()
         allCompDefinitionDisposables = false
+        break
+      case 'tree':
+        treeDisposables && treeDisposables.dispose()
+        treeDisposables = false
         break
       default:
         break

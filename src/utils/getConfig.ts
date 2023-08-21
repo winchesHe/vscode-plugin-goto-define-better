@@ -13,6 +13,7 @@ export class Config {
   public componentsCompletion = true
   public componentsHoverTips = true
   public componentsGotoDefinition = true
+  public tree = true
   public alias: object = {}
   public components: Record<string, ComponentsValue> = {}
   public decorationType!: TextEditorDecorationType
@@ -29,6 +30,7 @@ export class Config {
       componentsCompletion = true,
       componentsHoverTips = true,
       componentsGotoDefinition = true,
+      tree = true,
       alias = {},
       textLine = 'underline',
       textStyle = 'wavy',
@@ -49,6 +51,7 @@ export class Config {
     this.componentsGotoDefinition = componentsGotoDefinition
     this.alias = alias
     this.components = components
+    this.tree = tree
     this.decorationType = window.createTextEditorDecorationType({
       color: textColor,
       textDecoration: `${textLine} ${textStyle}`,

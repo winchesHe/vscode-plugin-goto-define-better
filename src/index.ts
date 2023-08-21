@@ -48,13 +48,10 @@ export function activate(context: ExtensionContext) {
     vscode.languages.registerCompletionItemProvider([
       { scheme: 'file', language: 'vue' },
     ], new ImportCompletionItems()),
-    vscode.window.registerTreeDataProvider('mixinsTree', mixinsTreeProvider),
   )
 
-  vscode.commands.registerCommand('mixins-explorer.refresh', () => mixinsTreeProvider.refresh())
-  vscode.commands.registerCommand('mixins-explorer.gotoDefinition', (node: Dependency) => mixinsTreeProvider.gotoDefinition(node))
-
   init()
+  initCommand()
   initComponents()
   updateProvider()
 }
@@ -62,6 +59,11 @@ export function activate(context: ExtensionContext) {
 function init() {
   initFileStore()
   vueConfig.activeHeight && initColor()
+}
+
+function initCommand() {
+  vscode.commands.registerCommand('mixins-explorer.refresh', () => mixinsTreeProvider.refresh())
+  vscode.commands.registerCommand('mixins-explorer.gotoDefinition', (node: Dependency) => mixinsTreeProvider.gotoDefinition(node))
 }
 
 function initFileStore() {

@@ -118,6 +118,11 @@
           "type": "boolean",
           "default": true,
           "markdownDescription": "开启组件库注册组件 `智能补全` 功能"
+        },
+        "mixins-helper.tree": {
+          "type": "boolean",
+          "default": true,
+          "markdownDescription": "开启侧边栏`Mixins 助手`树视图展示"
         }
       }
     },

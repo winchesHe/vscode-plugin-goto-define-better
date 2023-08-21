@@ -63,7 +63,7 @@ export function updateProvider() {
   }
   if (vueConfig.tree) {
     removeProvider('tree')
-    treeDisposables = window.registerTreeDataProvider('mixinsTree', mixinsTreeProvider)
+    treeDisposables = window.createTreeView('mixinsTree', { treeDataProvider: mixinsTreeProvider, showCollapseAll: true })
   }
   else {
     removeProvider('tree')

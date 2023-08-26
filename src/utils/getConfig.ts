@@ -18,6 +18,9 @@ export class Config {
   public components: Record<string, ComponentsValue> = {}
   public decorationType!: TextEditorDecorationType
 
+  /** 刷新标识 */
+  public refresh = false
+
   constructor() {
     this.update()
   }
@@ -56,6 +59,10 @@ export class Config {
       color: textColor,
       textDecoration: `${textLine} ${textStyle}`,
     })
+  }
+
+  public activeRefresh() {
+    return this.activeReload || this.refresh
   }
 }
 

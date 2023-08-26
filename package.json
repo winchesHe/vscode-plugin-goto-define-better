@@ -147,7 +147,7 @@
     "commands": [
       {
 				"command": "mixins-explorer.refresh",
-				"title": "刷新",
+				"title": "重新收集 Mixins 并刷新展示",
 				"icon": {
 					"light": "res/light/refresh.svg",
 					"dark": "res/dark/refresh.svg"

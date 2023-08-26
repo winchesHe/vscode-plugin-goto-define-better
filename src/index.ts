@@ -62,8 +62,14 @@ function init() {
 }
 
 function initCommand() {
-  vscode.commands.registerCommand('mixins-explorer.refresh', () => mixinsTreeProvider.refresh())
+  vscode.commands.registerCommand('mixins-explorer.refresh', () => refreshTree())
   vscode.commands.registerCommand('mixins-explorer.gotoDefinition', (node: Dependency) => mixinsTreeProvider.gotoDefinition(node))
+}
+
+function refreshTree() {
+  vueConfig.refresh = true
+  init()
+  mixinsTreeProvider.refresh()
 }
 
 function initFileStore() {

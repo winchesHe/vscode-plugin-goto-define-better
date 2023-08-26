@@ -72,7 +72,7 @@ export function getTsconfigPaths(activePath = ''): Record<string, any> {
 
 export function scanMixin(url: string): Record<string, MixinsValue> {
   if (existsSync(url)) {
-    if (vueConfig.activeReload)
+    if (vueConfig.activeRefresh())
       fileStore.initFileStore(url)
 
     const result = {}
@@ -114,7 +114,7 @@ export function scanMixin(url: string): Record<string, MixinsValue> {
 
         if (_store) {
           // activeReload或者不存在mixins值时才执行
-          if (fileStore.isEmpty(_store, 'mixinsValueMap') || vueConfig.activeReload)
+          if (fileStore.isEmpty(_store, 'mixinsValueMap') || vueConfig.activeRefresh())
             mixinsFile = scanMixin(path)
           else
             mixinsFile = _store.mixinsValueMap.get(path)!

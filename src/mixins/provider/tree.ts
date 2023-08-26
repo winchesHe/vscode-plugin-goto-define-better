@@ -1,7 +1,7 @@
 import * as path from 'path'
 import * as vscode from 'vscode'
 import type { FileStoreValue, TargetProperties } from '../../utils'
-import { extRoot, fileStore } from '../../utils'
+import { extRoot, fileStore, vueConfig } from '../../utils'
 import type { DataTuple } from '../transform'
 import { omitPathMixinsData } from '../transform'
 
@@ -12,6 +12,8 @@ export class MixinsTree implements vscode.TreeDataProvider<Dependency> {
 
   refresh() {
     this._onDidChangeTreeData.fire()
+    // 清空刷新标识
+    vueConfig.refresh = false
   }
 
   async gotoDefinition(node: Dependency) {

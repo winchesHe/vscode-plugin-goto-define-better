@@ -87,3 +87,11 @@
 ## 让我们开始吧！ 🛠️
 
 无论是初学者还是经验丰富的开发者，`Vue2-helper` 都将成为你的得力助手。通过智能的补全、高亮和跳转支持，你可以更轻松地构建出优雅、高效的 `Vue2` 应用。让我们一起开启愉快的 `Vue2` 开发之旅吧！
+
+### 下载地址 ⚡️
+
+[vscode插件市场](https://marketplace.visualstudio.com/items?itemName=winches.vue2-helper)
+
+vscode：插件中直接搜索`Vue2 Mixins Components Helper`安装即可
+
+![在这里插入图片描述](https://img-blog.csdnimg.cn/c952637594474805856ddaaa9153d472.png)

@@ -1,7 +1,7 @@
 {
   "publisher": "winches",
-  "name": "mixins-helper",
-  "displayName": "mixins-helper",
+  "name": "vue2-helper",
+  "displayName": "Vue2 Mixins Components Helper",
   "version": "1.0.0",
   "private": true,
   "description": "enhance vue2 mixins develop experience",
@@ -188,7 +188,8 @@
     "pack": "vsce package --no-dependencies",
     "test": "vitest",
     "typecheck": "tsc --noEmit",
-    "release": "bumpp && nr publish"
+    "changelog": "nr pack && npx conventional-changelog -p angular -i CHANGELOG.md -s && git add .",
+    "release": "bumpp --execute='npm run changelog' --all"
   },
   "devDependencies": {
     "@antfu/eslint-config": "^0.25.2",

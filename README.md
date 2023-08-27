@@ -1,38 +1,26 @@
-# Vue2-helper
+# Vue2-helper - 为你的 Vue2 开发增添智慧 ✨
 
-辅助`Vue2`开发中的`Mixins、组件库、Vue-router`的**智能补全、语义高亮、跳转支持、Hover 提示**等，提升`Vue2`开发体验。
+🚀 辅助`Vue2`开发中的`Mixins、组件库、Vue-router`的**智能补全、语义高亮、跳转支持、Hover 提示**等，提升`Vue2`开发体验。
 
-## Feature ✨
+## 功能特色 ✨
 
-✅ 配置式缓存设计（毫秒级切换体验）
+- ✅ 配置式缓存设计：秒级切换体验，让开发如丝般顺滑
+- ✅ [跳转 Mixins 定义位置](#跳转到mixins定义)：快速导航，轻松查看 Mixins 定义
+- ✅ Mixins 嵌套解析：支持嵌套的 Mixins 使用
+- ✅ [Mixins 内容智能补全](#mixins-内容智能补全)：智能补全助你事半功倍
+- ✅ [Mixins 内容高亮显示](#mixins-内容高亮显示)：让代码一目了然
+- ✅ Mixins 高亮自定义配置：满足个性化的编码需求
+- ✅ Ts 支持：无缝集成 TypeScript
+- ✅ Vue-class-component 支持：支持使用 .vue 后缀的 Vue-class-component
 
-✅ [跳转 Mixins 定义位置](#跳转到mixins定义)
+## 未来计划 📅
 
-✅ Mixins 嵌套解析（Mixins中的Mixins）
-
-✅ [Mixins 内容智能补全](#mixins-内容智能补全)
-
-✅ [Mixins 内容高亮显示](#mixins-内容高亮显示)
-
-✅ Mixins 高亮自定义配置
-
-✅ Ts 支持（Ts编写的Mixins）
-
-✅ Vue-class-component 支持（Js|Ts编写的.vue后缀的Mixins）
-
-## TODO
-
-✅ [Mixins 中引入的 Component 解析并支持跳转](#mixins-components-跳转)
-
-✅ Vue-router components 跳转 (Js-goto-definition 完成该功能)
-
-✅ [组件库注册组件引入的 Component 解析并支持跳转](#组件库跳转)
-
-✅ [组件库注册组件 Hover 出现文档跳转信息](#组件库-hover-并跳转)
-
-✅ [组件库注册组件智能补全提示](#组件库智能补全)
-
-✅ 升级为 Vue2-helper
+- ✅ [Mixins 中引入的 Component 解析并支持跳转](#mixins-components-跳转)
+- ✅ Vue-router components 跳转：Js-goto-definition 功能助你快速定位
+- ✅ [组件库注册组件引入的 Component 解析并支持跳转](#组件库跳转)
+- ✅ [组件库注册组件 Hover 出现文档跳转信息](#组件库-hover-并跳转)
+- ✅ [组件库注册组件智能补全提示](#组件库智能补全)
+- ✅ 持续升级，成为 Vue2 开发的得力助手
 
 ## 跳转到Mixins定义
 
@@ -87,3 +75,7 @@
 
 3. 组件库组件在项目内的地址（FileArr）：
    - fileArr: 这是一个文件路径数组，用于指定组件库组件在项目内的位置。在这个例子中，组件库的文件存储在名为"node_modules/.pnpm/element-ui@2.13.2_vue@2.6.10/node_modules/element-ui/packages"的目录中。
+
+## 让我们开始吧！ 🛠️
+
+无论是初学者还是经验丰富的开发者，`Vue2-helper` 都将成为你的得力助手。通过智能的补全、高亮和跳转支持，你可以更轻松地构建出优雅、高效的 `Vue2` 应用。让我们一起开启愉快的 `Vue2` 开发之旅吧！
